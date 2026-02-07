@@ -25,24 +25,27 @@ function App() {
     };
 
     const handleKeyDown = (e) => {
-      if (!activeContent) return;
+  if (!activeContent) return;
 
-      // ESC her zaman kapatır
-      if (e.key === 'Escape') {
-        setActiveContent(null);
-        return;
-      }
+  // Form elemanlarından birine odaklanılmış mı?
+  const isTyping = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
 
-      // GuestBook (Form) açıkken E ve Space yazı yazmak içindir, kapatmak için değil!
-      if (activeContent.type === 'guestbook') {
-        return; // Sadece ESC ile kapanabilir
-      }
+  if (e.key === 'Escape') {
+    setActiveContent(null);
+    return;
+  }
 
-      // DialogueBox veya Modal ise Space ve E ile de kapanabilir/geçilebilir
-      if (e.key === ' ' || e.key.toLowerCase() === 'e') {
-        setActiveContent(null);
-      }
-    };
+  // Eğer yazıyorsak, Space ve E tuşlarının modalı kapatmasını engelle
+  if (isTyping) {
+    e.stopPropagation(); // Event'in yukarı (Phaser'a) çıkmasını engelle
+    return;
+  }
+
+  // Sadece yazı yazmıyorken (Diyalog/Modal okurken) geçişe izin ver
+  if (e.key === ' ' || e.key.toLowerCase() === 'e') {
+    setActiveContent(null);
+  }
+};
 
     window.addEventListener('openModal', handleOpenInteraction);
     window.addEventListener('keydown', handleKeyDown);

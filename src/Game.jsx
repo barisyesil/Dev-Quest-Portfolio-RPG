@@ -98,10 +98,42 @@ const Game = () => {
       this.interactionManager.init(map);
 }
 
+
 function update() {
-  const speed = 100;
+  const speed = 125;
   this.player.setVelocity(0);
 
+  if (window.isUIOpen) {
+        // Klavyeyi ve global tuş yakalamayı durdur
+        if (this.input.keyboard.enabled) {
+            this.input.keyboard.enabled = false;
+            if (this.input.keyboard.manager) {
+                this.input.keyboard.disableGlobalCapture(); // Tarayıcı tuşları serbest bırakır
+            }
+        }
+
+        // Karakteri durdur
+        this.player.setVelocity(0);
+        const currentAnim = this.player.anims.currentAnim?.key || 'idle-down';
+        this.player.anims.play(currentAnim, true);
+
+        // Label animasyonları çalışmaya devam etsin
+        if (this.interactionManager) {
+            this.interactionManager.update();
+        }
+        return; 
+    }
+    // UI KAPALIYKEN (Oyuna Dönüş)
+   if (!this.input.keyboard.enabled) {
+        this.input.keyboard.enabled = true;
+        if (this.input.keyboard.manager) {
+            this.input.keyboard.enableGlobalCapture();
+            
+            // Interaksiyon tuşunu resetler ve 'temiz' bir JustDown olarak algılanır.
+            this.input.keyboard.resetKeys(); 
+        }
+    }
+    
   // Hareket ve Animasyon Kontrolü
   if (this.cursors.left.isDown) {
     this.player.setVelocityX(-speed);

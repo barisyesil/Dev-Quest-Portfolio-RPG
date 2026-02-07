@@ -5,6 +5,7 @@ export default class InteractionManager {
         this.interactionPoints = scene.physics.add.group();
         this.activeObject = null;
         this.labels = []; // Tüm etiketleri saklayacağımız dizi
+        this.interactKey = this.scene.input.keyboard.addKey('E'); // E tuşunu önceden tanımla
     }
 
     init(map) {
@@ -55,39 +56,38 @@ export default class InteractionManager {
     }
 
     update() {
-        // 1. Tüm etiketleri süzülme animasyonuyla oynat
-        if (window.isUIOpen) return;
+    // 1. ANIMASYONLAR: UI açık olsa da çalışır
+    const time = this.scene.time.now;
+    this.labels.forEach(labelItem => {
+        const floatingY = Math.sin(time / 200) * 4;
+        labelItem.textObj.y = labelItem.baseY + floatingY;
 
-         const time = this.scene.time.now;
-         this.labels.forEach(labelItem => {
-            const floatingY = Math.sin(time / 200) * 4;
-            labelItem.textObj.y = labelItem.baseY + floatingY;
-
-            // Eğer oyuncu bu etiketin sensörüne yakınsa etiketi parlat (Vurgu)
-            if (this.activeObject === labelItem.sensorObj && this.scene.physics.overlap(this.scene.player, labelItem.sensorObj)) {
-                labelItem.textObj.setFill('#ffffff'); // Yakındayken beyaz olsun
-                labelItem.textObj.setScale(1.1); // Hafif büyüsün
-            } else {
-                labelItem.textObj.setFill('#f1c40f'); // Uzaktayken sarı
-                labelItem.textObj.setScale(1.0);
-            }
-        });
-
-        // 2. Etkileşim Kontrolü
-        if (this.activeObject) {
-        const isOverlapping = this.scene.physics.overlap(this.scene.player, this.activeObject);
-        
-        if (isOverlapping) {
-            const eKey = this.scene.input.keyboard.addKey('E');
-            if (Phaser.Input.Keyboard.JustDown(eKey)) {
-                // Bu event artık sadece UI kapalıyken ateşlenebilir
-                window.dispatchEvent(new CustomEvent('openModal', { 
-                    detail: { contentKey: this.activeObject.getData('contentKey') } 
-                }));
-            }
+        // UI açıkken parlamayı durdur ki kafa karışmasın
+        if (!window.isUIOpen && this.activeObject === labelItem.sensorObj && this.scene.physics.overlap(this.scene.player, labelItem.sensorObj)) {
+            labelItem.textObj.setFill('#ffffff');
+            labelItem.textObj.setScale(1.1);
         } else {
-            this.activeObject = null;
+            labelItem.textObj.setFill('#f1c40f');
+            labelItem.textObj.setScale(1.0);
         }
-    }
-    }
+    });
+
+    // 2. ETKİLEŞİM TETİKLEME: UI açıkken buradan sonrasını çalıştırma
+    if (window.isUIOpen) return;
+
+   if (this.activeObject) {
+            const isOverlapping = this.scene.physics.overlap(this.scene.player, this.activeObject);
+            
+            if (isOverlapping) {
+                // Sadece tanımladığımız tuşu kontrol ediyoruz
+                if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
+                    window.dispatchEvent(new CustomEvent('openModal', { 
+                        detail: { contentKey: this.activeObject.getData('contentKey') } 
+                    }));
+                }
+            } else {
+                this.activeObject = null;
+            }
+        }
+}
 }
