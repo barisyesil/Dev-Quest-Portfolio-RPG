@@ -1,0 +1,42 @@
+/* App.css */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+body, html {
+  margin: 0;
+  padding: 0;
+  background-color: #121212;
+  overflow: hidden; /* Sayfa kaydırmasını engeller */
+}
+
+.app-main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.game-title {
+  color: #f1c40f;
+  font-size: 20px;
+  margin-bottom: 20px;
+  text-shadow: 4px 4px 0px #000;
+}
+
+.game-wrapper {
+  position: relative; /* Modalın buna göre hizalanması için hayati */
+  width: 800px;
+  height: 600px;
+  border: 8px solid #333;
+  background-color: #000;
+  box-shadow: 0px 20px 50px rgba(0,0,0,0.5);
+}
+
+.game-controls {
+  margin-top: 20px;
+  color: #666;
+  font-size: 10px;
+  letter-spacing: 1px;
+}

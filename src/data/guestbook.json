@@ -1,0 +1,37 @@
+{
+  "guest_book": {
+    "title": "Ziyaretçi Defteri",
+    "entries": [
+      {
+        "id": 1,
+        "author": "Arif Keser",
+        "message": "Harika bir ofis tasarımı olmuş, başarılar!",
+        "date": "2026-02-07"
+      },
+      {
+        "id": 2,
+        "author": "Bilişim Kulübü",
+        "message": "Projelerin çok etkileyici görünüyor.",
+        "date": "2026-02-06"
+      },
+      {
+        "id": 3,
+        "author": "Gamers United",
+        "message": "Oyunlaştırılmış portfolyo fikri süper, devamını bekliyoruz!",
+        "date": "2026-02-05"
+      },
+      {
+        "id": 4,
+        "author": "Tech Enthusiast",
+        "message": "Yapay zeka destekli asistan projesi çok ilginç, detayları merak ediyorum.",
+        "date": "2026-02-04"
+      },
+      {
+        "id": 5,
+        "author": "Sena Yılmaz",
+        "message": "Ofis turu çok keyifliydi, emeğinize sağlık!",
+        "date": "2026-02-03"
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "project_desk_intro": {
+    "title": "Projelerim",
+    "description": "Burada üzerinde çalıştığım yazılım projelerini görebilirsin.",
+    "projects": [
+      {
+        "name": "Akademik Asistan Sistemi",
+        "tech": "Llama 3, FastAPI, React",
+        "details": "Mezuniyet projem kapsamında geliştirdiğim yapay zeka destekli asistan."
+      },
+      {
+        "name": "DevQuest",
+        "tech": "Phaser.js, React, .NET",
+        "details": "Şu an içinde bulunduğun oyunlaştırılmış portfolyo projesi."
+      }
+    ]
+  }
+}
