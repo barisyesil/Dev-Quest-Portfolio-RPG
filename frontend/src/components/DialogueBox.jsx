@@ -1,50 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { dataMap } from '../data/dataRegistry';
 
-const DialogueBox = ({ contentKey, onClose }) => {
+const DialogueBox = ({ contentKey, onClose, dataOverride }) => {
   const [displayText, setDisplayText] = useState('');
   const [isFinished, setIsFinished] = useState(false);
   
-  // Hangi veriyi göstereceğimizi registry'den çekiyoruz
-  const content = dataMap[contentKey];
-  // Eğer veri yoksa veya text alanı boşsa varsayılan bir metin gösterelim
-  const fullText = content?.data?.text || "...";
+  // ÖNCELİK: Canlı veri -> Statik veri -> Varsayılan metin
+  const textSource = dataOverride || (dataMap[contentKey] ? dataMap[contentKey].data : null);
+  const fullText = textSource?.text || "No text data found...";
 
-  // Index değerini bir ref içinde tutmak, setInterval içinde kaybolmasını önler
   const indexRef = useRef(0);
 
   useEffect(() => {
-    // Her yeni diyalog başladığında sıfırla
     indexRef.current = 0;
     setDisplayText('');
     setIsFinished(false);
 
     const timer = setInterval(() => {
-      // Index'i bir artır
       indexRef.current += 1;
-
-      // Metnin başından şu anki index'e kadar olan kısmını al
-      // slice(0, 1) ilk harfi, slice(0, 5) ilk 5 harfi verir.
       const currentSlice = fullText.slice(0, indexRef.current);
       setDisplayText(currentSlice);
 
-      // Eğer tüm metni gösterdiysek durdur
       if (indexRef.current >= fullText.length) {
         clearInterval(timer);
         setIsFinished(true);
       }
-    }, 40); // Yazı hızı (milisaniye)
+    }, 40);
 
-    // Component ekrandan kalkarsa timer'ı temizle
     return () => clearInterval(timer);
-  }, [fullText]); // fullText değişirse effect yeniden çalışır
+  }, [fullText]);
 
   return (
     <div style={styles.container}>
       <div style={styles.box}>
         <div style={styles.text}>{displayText}</div>
         
-        {/* Metin bittiğinde yanıp sönen devam et uyarısı */}
         {isFinished && (
           <div style={styles.arrowContainer}>
             <span style={styles.arrowAnim}>▼</span> [SPACE]

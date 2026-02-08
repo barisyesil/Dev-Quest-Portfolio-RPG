@@ -1,0 +1,6 @@
+@DevQuest.Api_HostAddress = http://localhost:5174
+
+GET {{DevQuest.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

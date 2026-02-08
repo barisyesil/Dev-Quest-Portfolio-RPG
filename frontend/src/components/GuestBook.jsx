@@ -1,34 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import guestData from '../data/guestbook.json';
+import { api } from '../services/api';
 
 const GuestBook = ({ onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [view, setView] = useState('read'); // 'read' veya 'write'
-  const [entries, setEntries] = useState(guestData.guest_book.entries);
-  
-  // Form State
+  const [view, setView] = useState('read');
+  const [entries, setEntries] = useState([]); // Başlangıç boş dizi
   const [formData, setFormData] = useState({ author: '', message: '' });
 
+  // Açılış animasyonu ve VERİ ÇEKME
   useEffect(() => {
     const timer = setTimeout(() => setIsOpen(true), 10);
+    loadEntries(); // Bileşen açıldığında verileri yükle
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSubmit = (e) => {
+  const loadEntries = async () => {
+    try {
+      const data = await api.getGuestBook();
+      setEntries(data);
+    } catch (err) {
+      console.error("Entries yüklenemedi:", err);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.author || !formData.message) return;
 
-    // Şimdilik sadece yerel listeye ekliyoruz (Backend bağlayınca burası değişecek)
-    const newEntry = {
-      id: entries.length + 1,
+    await api.postGuestBookEntry({
       author: formData.author,
-      message: formData.message,
-      date: new Date().toISOString().split('T')[0]
-    };
+      message: formData.message
+    });
 
-    setEntries([newEntry, ...entries]);
     setFormData({ author: '', message: '' });
-    setView('read'); // Kayıttan sonra listeye geri dön
+    await loadEntries(); 
+    setView('read');
+  };
+
+  // Tarih ve Saat Formatlayıcı (Örn: 08.02.2026 14:30)
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('tr-TR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
@@ -38,8 +56,6 @@ const GuestBook = ({ onClose }) => {
         transform: isOpen ? 'scale(1)' : 'scaleX(0)',
         opacity: isOpen ? 1 : 0
       }}>
-        
-        {/* SOL SAYFA: Her zaman Entry Listesini gösterir */}
         <div style={styles.leftPage}>
           <h2 style={styles.pageTitle}>RECENT NOTES</h2>
           <div style={styles.entryList} className="custom-scrollbar">
@@ -47,7 +63,8 @@ const GuestBook = ({ onClose }) => {
               <div key={entry.id} style={styles.entryItem}>
                 <p style={styles.entryAuthor}>@{entry.author}</p>
                 <p style={styles.entryText}>{entry.message}</p>
-                <span style={styles.entryDate}>{entry.date}</span>
+                {/* Backend'den gelen 'createdAt' kullanılıyor */}
+                <span style={styles.entryDate}>{formatDate(entry.createdAt)}</span>
               </div>
             )) : (
               <p style={{fontSize: '8px', textAlign: 'center', marginTop: '50px'}}>No entries yet...</p>
@@ -55,24 +72,18 @@ const GuestBook = ({ onClose }) => {
           </div>
         </div>
 
-        {/* SAĞ SAYFA: Mod değiştirme (Read/Write) */}
         <div style={styles.rightPage}>
           <button onClick={onClose} style={styles.closeBtn}>[X]</button>
           
           {view === 'read' ? (
             <div style={styles.actionArea}>
-              <p style={styles.description}>
-                I'd love to hear your thoughts about my office or projects!
-              </p>
-              <button onClick={() => setView('write')} style={styles.pixelBtn}>
-                WRITE A NOTE
-              </button>
-              <div style={styles.footerInfo}>PAGE 1 OF 1</div>
+              <p style={styles.description}>I'd love to hear your thoughts about my office or projects!</p>
+              <button onClick={() => setView('write')} style={styles.pixelBtn}>WRITE A NOTE</button>
+              <div style={styles.footerInfo}>REAL-TIME GUESTBOOK</div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={styles.formContainer}>
               <h3 style={styles.formTitle}>NEW ENTRY</h3>
-              
               <div style={styles.inputGroup}>
                 <label style={styles.label}>YOUR NAME:</label>
                 <input 
@@ -84,7 +95,6 @@ const GuestBook = ({ onClose }) => {
                   required
                 />
               </div>
-
               <div style={styles.inputGroup}>
                 <label style={styles.label}>MESSAGE:</label>
                 <textarea 
@@ -95,7 +105,6 @@ const GuestBook = ({ onClose }) => {
                   required
                 />
               </div>
-
               <div style={styles.formButtons}>
                 <button type="button" onClick={() => setView('read')} style={styles.cancelBtn}>BACK</button>
                 <button type="submit" style={styles.submitBtn}>SEND</button>

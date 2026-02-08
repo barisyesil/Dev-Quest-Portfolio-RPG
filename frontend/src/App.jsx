@@ -2,50 +2,102 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Game from './Game';
 import PixelModal from './components/PixelModal';
-import DialogueBox from './components/DialogueBox'; // Yeni bileşen
-import { dataMap } from './data/dataRegistry'; // Veri dağıtıcı
-import GuestBook from './components/GuestBook'; // Yeni bileşen
+import DialogueBox from './components/DialogueBox';
+import GuestBook from './components/GuestBook';
+import { api } from './services/api';
 
 function App() {
   const [activeContent, setActiveContent] = useState(null);
+  const [dynamicRegistry, setDynamicRegistry] = useState({});
+  const [loading, setLoading] = useState(true);
 
+  // 1. Veri Yükleme: Backend'den tüm portfolyo içeriğini çekiyoruz
   useEffect(() => {
-    // UI durumunu global olarak işaretle (Phaser'ın görmesi için)
+    const fetchPortfolioData = async () => {
+      try {
+        setLoading(true);
+        const projects = await api.getItems('Project');
+        const achievements = await api.getItems('Achievement');
+        const dialogues = await api.getDialogues();
+
+        // API'den gelen verileri bileşenlerin beklediği formata (Registry) dönüştür
+        const registry = {
+          // Projeler Listesi
+          project_desk_intro: { 
+            type: 'modal', 
+            data: { 
+              title: "PROJECTS", 
+              items: projects.map(p => ({ ...p, tags: p.tags ? p.tags.split(',') : [] })) 
+            } 
+          },
+          // Başarılar Listesi
+          achievements_list: { 
+            type: 'modal', 
+            data: { 
+              title: "ACHIEVEMENTS", 
+              items: achievements.map(a => ({ ...a, tags: a.tags ? a.tags.split(',') : [] })) 
+            } 
+          },
+          // Ziyaretçi Defteri (Statik tetikleyici)
+          guest_book_interaction: { type: 'guestbook' }
+        };
+
+
+        // Dinamik Diyalogları (Easter Eggler, NPC'ler) Registry'e ekle
+ 
+        dialogues.forEach(d => { 
+          registry[d.key] = {  
+            type: 'dialogue', 
+            data: { text: d.text } 
+          };
+        });
+
+        setDynamicRegistry(registry);
+      } catch (error) {
+        console.error("Backend bağlantı hatası:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPortfolioData();
+  }, []);
+
+  // 2. Etkileşim ve Klavye Yönetimi
+  useEffect(() => {
     window.isUIOpen = activeContent !== null;
 
     const handleOpenInteraction = (event) => {
-      // Eğer zaten bir UI açıksa yeni bir etkileşimi tetikleme
       if (window.isUIOpen) return; 
 
       const key = event.detail.contentKey;
-      const content = dataMap[key];
+      const content = dynamicRegistry[key]; // Veriyi dinamik registry'den al
+      
       if (content) {
+        console.log("İçerik Açılıyor:", key);
         setActiveContent({ ...content, key: key });
       }
     };
 
     const handleKeyDown = (e) => {
-  if (!activeContent) return;
+      if (!activeContent) return;
 
-  // Form elemanlarından birine odaklanılmış mı?
-  const isTyping = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+      const isTyping = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+      
+      if (e.key === 'Escape') {
+        setActiveContent(null);
+        return;
+      }
 
-  if (e.key === 'Escape') {
-    setActiveContent(null);
-    return;
-  }
+      if (isTyping) {
+        e.stopPropagation();
+        return;
+      }
 
-  // Eğer yazıyorsak, Space ve E tuşlarının modalı kapatmasını engelle
-  if (isTyping) {
-    e.stopPropagation(); // Event'in yukarı (Phaser'a) çıkmasını engelle
-    return;
-  }
-
-  // Sadece yazı yazmıyorken (Diyalog/Modal okurken) geçişe izin ver
-  if (e.key === ' ' || e.key.toLowerCase() === 'e') {
-    setActiveContent(null);
-  }
-};
+      if (e.key === ' ' || e.key.toLowerCase() === 'e') {
+        setActiveContent(null);
+      }
+    };
 
     window.addEventListener('openModal', handleOpenInteraction);
     window.addEventListener('keydown', handleKeyDown);
@@ -54,7 +106,16 @@ function App() {
       window.removeEventListener('openModal', handleOpenInteraction);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeContent]);
+  }, [activeContent, dynamicRegistry]); // dynamicRegistry bağımlılığı önemli
+
+  // Yükleme Ekranı (Retro Stil)
+  if (loading) {
+    return (
+      <div className="app-main-container" style={{ justifyContent: 'center' }}>
+        <div className="loading-text">LOADING DATABASE...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-main-container">
@@ -63,25 +124,25 @@ function App() {
       <div className="game-wrapper">
         <Game />
         
-        {/* Koşullu Render: Gelen tip 'modal' ise (Projeler/Başarılar) */}
         {activeContent?.type === 'modal' && (
           <PixelModal 
             contentKey={activeContent.key} 
+            dataOverride={activeContent.data} // Dinamik veriyi aktar
             onClose={() => setActiveContent(null)} 
           />
         )}
 
-        {/* Koşullu Render: Gelen tip 'dialogue' ise (Easter Egg/NPC) */}
         {activeContent?.type === 'dialogue' && (
           <DialogueBox 
             contentKey={activeContent.key} 
+            dataOverride={activeContent.data} // Dinamik veriyi aktar
             onClose={() => setActiveContent(null)} 
           />
         )}
         
-          {activeContent?.type === 'guestbook' && (
+        {activeContent?.type === 'guestbook' && (
           <GuestBook onClose={() => setActiveContent(null)} />
-         )}
+        )}
       </div>
 
       <div className="game-controls">

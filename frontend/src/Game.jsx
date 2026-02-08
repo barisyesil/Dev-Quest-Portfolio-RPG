@@ -14,7 +14,7 @@ const Game = () => {
       pixelArt: true, // Piksellerin keskin görünmesi için şart
       physics: {
         default: 'arcade',
-        arcade: { debug: true }
+        arcade: { debug: false }
       },
       scene: { preload, create, update }
     };

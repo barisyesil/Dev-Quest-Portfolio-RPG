@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
-import { dataMap } from '../data/dataRegistry'; // Artık merkezi registry'i kullanıyoruz
+import { dataMap } from '../data/dataRegistry'; 
 
-const PixelModal = ({ contentKey, onClose }) => {
+// dataOverride prop'unu ekledik
+const PixelModal = ({ contentKey, onClose, dataOverride }) => {
   const [selectedId, setSelectedId] = useState(null);
   
-  // Registry'den wrapper nesnesini alıyoruz: { type: 'modal', data: { ... } }
-  const wrapper = dataMap[contentKey];
+  // ÖNCELİK SIRASI:
+  // 1. App.jsx'ten gelen canlı veri (dataOverride)
+  // 2. dataRegistry'deki statik veri (Yedek)
+  const incomingData = dataOverride || (dataMap[contentKey] ? dataMap[contentKey].data : null);
   
-  // Güvenlik kontrolü: Veri yoksa veya items tanımlı değilse render etme
-  if (!wrapper || !wrapper.data || !wrapper.data.items) {
-    console.error("Modal verisi bulunamadı veya formatı hatalı:", contentKey);
+  // Güvenlik kontrolü
+  if (!incomingData || !incomingData.items) {
+    console.error("Modal verisi bulunamadı:", contentKey);
     return null;
   }
 
-  const data = wrapper.data; // Asıl içerik (title ve items)
+  // Veri yapısı artık direkt { title: "...", items: [...] } şeklinde geliyor
+  const data = incomingData; 
 
   return (
     <div style={styles.overlay}>
@@ -42,14 +46,15 @@ const PixelModal = ({ contentKey, onClose }) => {
                 <div style={styles.detailsBox}>
                   <p style={styles.description}>{item.description}</p>
                   
-                  {/* Etiketler (Tech, Date, Issuer vb.) */}
+                  {/* Etiketler */}
                   <div style={styles.tagContainer}>
-                    {item.tags && item.tags.map(tag => (
-                      <span key={tag} style={styles.tag}>[{tag}]</span>
+                    {/* App.jsx'te zaten split işlemi yapıldığı için burada direkt map'liyoruz */}
+                    {item.tags && Array.isArray(item.tags) && item.tags.map(tag => (
+                      <span key={tag} style={styles.tag}>[{tag.trim()}]</span>
                     ))}
                   </div>
 
-                  {/* Varsa Link Butonu */}
+                  {/* Link Butonu */}
                   {item.link && (
                     <a href={item.link} target="_blank" rel="noreferrer" style={styles.linkBtn}>
                       VIEW DETAILS
@@ -65,7 +70,8 @@ const PixelModal = ({ contentKey, onClose }) => {
     </div>
   );
 };
-// Inline Styles (Daha temiz görünüm için dışarı aldım)
+
+// ... styles objesi aynı kalabilir ...
 const styles = {
   overlay: {
     position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
