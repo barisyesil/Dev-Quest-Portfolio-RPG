@@ -1,0 +1,321 @@
+/* src/components/AdminPanel.css */
+
+/* =========================================
+   1. GENEL YERLEŞİM (LAYOUT)
+   ========================================= */
+.admin-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background-color: #0f172a; /* Koyu Lacivert/Siyah */
+    color: #e2e8f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden; /* Sayfa taşmasını engelle */
+}
+
+/* =========================================
+   2. SIDEBAR (YAN MENÜ)
+   ========================================= */
+.admin-sidebar {
+    width: 260px;
+    flex-shrink: 0; /* Küçülmesini engelle */
+    background-color: #1e293b;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.admin-logo {
+    font-family: 'Press Start 2P', cursive; /* Eğer font yüklü değilse monospace döner */
+    font-size: 16px;
+    color: #38bdf8; /* Açık Mavi */
+    margin-bottom: 40px;
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #334155;
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    padding: 15px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-btn:hover {
+    background-color: #334155;
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.nav-btn.active {
+    background-color: #0ea5e9; /* Parlak Mavi */
+    color: white;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.back-link {
+    margin-top: auto;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 12px;
+    text-align: center;
+    padding: 10px;
+}
+.back-link:hover { color: #fff; }
+
+/* =========================================
+   3. İÇERİK ALANI (CONTENT)
+   ========================================= */
+.admin-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto; /* İçerik taşarsa scroll olsun */
+    background-color: #0f172a;
+    position: relative;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #f1f5f9;
+    border-left: 5px solid #38bdf8;
+    padding-left: 15px;
+}
+
+.add-btn {
+    background-color: #22c55e; /* Yeşil */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s;
+}
+
+.add-btn:active { transform: scale(0.95); }
+
+/* =========================================
+   4. TABLO TASARIMI
+   ========================================= */
+.table-container {
+    background-color: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.data-table th {
+    background-color: #334155;
+    color: #94a3b8;
+    text-align: left;
+    padding: 15px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.data-table td {
+    padding: 15px;
+    border-bottom: 1px solid #334155;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover { background-color: #263344; }
+
+/* Butonlar */
+.action-btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    margin-right: 5px;
+    font-weight: bold;
+    transition: opacity 0.2s;
+}
+
+.edit-btn { background-color: #f59e0b; color: white; }
+.del-btn { background-color: #ef4444; color: white; }
+.action-btn:hover { opacity: 0.8; }
+
+/* =========================================
+   5. MODAL / POPUP STYLES (GLOBAL)
+   ========================================= */
+/* KRİTİK: Bu bölüm @media query'nin DIŞINDA olmalı */
+
+.modal-overlay {
+    position: fixed; /* Ekranın neresinde olursan ol sabittir */
+    top: 0;
+    left: 0;
+    width: 100vw; /* Tüm genişlik */
+    height: 100vh; /* Tüm yükseklik */
+    background-color: rgba(0, 0, 0, 0.8); /* Koyu Arka Plan */
+    backdrop-filter: blur(5px); /* Buzlu Cam Efekti */
+    display: flex;
+    align-items: center; /* Dikey Ortalama */
+    justify-content: center; /* Yatay Ortalama */
+    z-index: 9999; /* En üstte durması için */
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    background-color: #1e293b;
+    width: 500px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #38bdf8;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    color: #f1f5f9;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #38bdf8;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #fff;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 14px;
+    box-sizing: border-box; /* Padding taşmasını engeller */
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #334155;
+}
+
+.save-btn {
+    background-color: #38bdf8;
+    color: #0f172a;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.cancel-btn {
+    background-color: transparent;
+    color: #cbd5e1;
+    border: 1px solid #475569;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.save-btn:hover { background-color: #0ea5e9; }
+.cancel-btn:hover { background-color: #334155; color: #fff; }
+
+/* Animasyon */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* =========================================
+   6. RESPONSIVE (MOBİL) DÜZENLEMELER
+   ========================================= */
+@media (max-width: 768px) {
+    .admin-container {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .admin-logo {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+        margin-right: 20px;
+        font-size: 12px;
+    }
+
+    .nav-btn {
+        padding: 8px 15px;
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+    
+    .back-link { display: none; }
+
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .add-btn { width: 100%; }
+}

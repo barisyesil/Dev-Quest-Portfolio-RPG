@@ -121,28 +121,41 @@ function App() {
     <div className="app-main-container">
       <h1 className="game-title">DEVQUEST: PORTFOLIO RPG</h1>
 
-      <div className="game-wrapper">
-        <Game />
-        
-        {activeContent?.type === 'modal' && (
-          <PixelModal 
-            contentKey={activeContent.key} 
-            dataOverride={activeContent.data} // Dinamik veriyi aktar
-            onClose={() => setActiveContent(null)} 
-          />
-        )}
+      {/* ARCADE MAKİNESİ ALANI */}
+      <div className="arcade-wrapper">
+        {/* 1. Makine Görseli */}
+        <img 
+          src="/retro_arcade_image.png" 
+          alt="Arcade Machine" 
+          className="arcade-bg-img" 
+        />
 
-        {activeContent?.type === 'dialogue' && (
-          <DialogueBox 
-            contentKey={activeContent.key} 
-            dataOverride={activeContent.data} // Dinamik veriyi aktar
-            onClose={() => setActiveContent(null)} 
-          />
-        )}
-        
-        {activeContent?.type === 'guestbook' && (
-          <GuestBook onClose={() => setActiveContent(null)} />
-        )}
+        {/* 2. Oyun Ekranı (Görselin içine oturacak) */}
+        <div className="game-screen" id="arcade-screen-container">
+          {/* Game bileşeni artık buraya render olacak */}
+          <Game />
+
+          {/* Modallar ve Diyaloglar da oyun ekranının içinde çıksın */}
+          {activeContent?.type === 'modal' && (
+            <PixelModal 
+              contentKey={activeContent.key} 
+              dataOverride={activeContent.data} 
+              onClose={() => setActiveContent(null)} 
+            />
+          )}
+
+          {activeContent?.type === 'dialogue' && (
+            <DialogueBox 
+              contentKey={activeContent.key} 
+              dataOverride={activeContent.data} 
+              onClose={() => setActiveContent(null)} 
+            />
+          )}
+          
+          {activeContent?.type === 'guestbook' && (
+             <GuestBook onClose={() => setActiveContent(null)} />
+          )}
+        </div>
       </div>
 
       <div className="game-controls">

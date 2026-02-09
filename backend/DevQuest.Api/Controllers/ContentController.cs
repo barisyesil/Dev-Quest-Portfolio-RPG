@@ -46,15 +46,62 @@ namespace DevQuest.Api.Controllers
             return Ok(dialogue);
         }
 
-        // --- SİLME (DELETE) --- (Hatalı girişleri temizlemek için)
+        // --- SİLME (DELETE) ---
+
         [HttpDelete("items/{id}")]
         public async Task<IActionResult> DeleteItem(int id)
         {
             var item = await _context.ContentItems.FindAsync(id);
             if (item == null) return NotFound();
+            
             _context.ContentItems.Remove(item);
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        [HttpDelete("dialogues/{id}")]
+        public async Task<IActionResult> DeleteDialogue(int id)
+        {
+            var dialogue = await _context.Dialogues.FindAsync(id);
+            if (dialogue == null) return NotFound();
+
+            _context.Dialogues.Remove(dialogue);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // --- GÜNCELLEME (UPDATE) ---
+
+        [HttpPut("items/{id}")]
+        public async Task<IActionResult> UpdateItem(int id, ContentItem item)
+        {
+            if (id != item.Id) return BadRequest();
+            
+            _context.Entry(item).State = EntityState.Modified;
+            
+            try {
+                await _context.SaveChangesAsync();
+            } catch (DbUpdateConcurrencyException) {
+                if (!_context.ContentItems.Any(e => e.Id == id)) return NotFound();
+                else throw;
+            }
+            return NoContent();
+        }
+
+        [HttpPut("dialogues/{id}")]
+        public async Task<IActionResult> UpdateDialogue(int id, Dialogue dialogue)
+        {
+            if (id != dialogue.Id) return BadRequest();
+            
+            _context.Entry(dialogue).State = EntityState.Modified;
+            
+            try {
+                await _context.SaveChangesAsync();
+            } catch (DbUpdateConcurrencyException) {
+                if (!_context.Dialogues.Any(e => e.Id == id)) return NotFound();
+                else throw;
+            }
+            return NoContent();
+        }
     }
-} 
+}

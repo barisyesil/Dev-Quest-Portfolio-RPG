@@ -1,11 +1,10 @@
-/* App.css */
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
+/* GENEL SAYFA YAPISI */
 body, html {
   margin: 0;
   padding: 0;
-  background-color: #121212;
-  overflow: hidden; /* Sayfa kaydırmasını engeller */
+  overflow: hidden; /* Scroll barları gizle */
+  background-color: #000;
+  height: 100%;
 }
 
 .app-main-container {
@@ -15,28 +14,91 @@ body, html {
   justify-content: center;
   height: 100vh;
   width: 100vw;
-  font-family: 'Press Start 2P', cursive;
+  position: relative;
+  
+  /* --- MATRIX / CYBER GRID BACKGROUND --- */
+  background: 
+    linear-gradient(rgba(0, 20, 0, 0.9), rgba(0, 0, 0, 0.9)), /* Karartma katmanı */
+    linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  perspective: 500px;
+  animation: scrollGrid 20s linear infinite;
 }
 
-.game-title {
-  color: #f1c40f;
-  font-size: 20px;
-  margin-bottom: 20px;
-  text-shadow: 4px 4px 0px #000;
+/* Grid Hareket Animasyonu */
+@keyframes scrollGrid {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 1000px; } /* Aşağı doğru akış */
 }
 
-.game-wrapper {
-  position: relative; /* Modalın buna göre hizalanması için hayati */
-  width: 800px;
-  height: 600px;
-  border: 8px solid #333;
+/* --- ARCADE MAKİNESİ KAPLAYICISI --- */
+.arcade-wrapper {
+  position: relative; /* İçindeki oyunu buna göre konumlandıracağız */
+  height: 90vh; /* Ekranın %90'ı kadar yer kaplasın */
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+}
+
+/* Makine Görseli */
+.arcade-bg-img {
+  height: 100%; /* Parent yüksekliğine uy */
+  width: auto;  /* Oranını koru */
+  z-index: 10;  /* Oyunun önünde çerçeve gibi durabilir (eğer ekran kısmı şeffafsa) */
+  /* NOT: Eğer görselin ekran kısmı boş/şeffaf değilse z-index'i düşürüp oyunu üste almalıyız */
+  pointer-events: none; /* Tıklamaları engellemesin */
+}
+
+/* --- OYUN EKRANI ALANI (PHASER BURAYA GELECEK) --- */
+.game-screen {
+  position: absolute;
+  z-index: 5; /* Görselin ekranı şeffafsa görselin arkasına (5), değilse önüne (15) koy */
   background-color: #000;
-  box-shadow: 0px 20px 50px rgba(0,0,0,0.5);
+  overflow: hidden;
+
+  /* --- AYARLAMAN GEREKEN KISIM --- */
+  /* Bu değerleri görselinin ekran boşluğuna tam oturana kadar değiştir */
+  top: 18%;    /* Görselin üstünden ne kadar aşağıda? */
+  left: 14.5%;   /* Görselin solundan ne kadar içeride? */
+  width: 71%;  /* Ekran genişliği görselin yüzde kaçı? */
+  height: 48%; /* Ekran yüksekliği görselin yüzde kaçı? */
+  /* ------------------------------- */
+  
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.8); /* İç gölge ile derinlik */
+}
+
+/* CRT / Eski Ekran Efekti (Opsiyonel: Oyuna çizgili görünüm verir) */
+.game-screen::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 20;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
+
+/* Başlık ve Kontroller */
+.game-title {
+  position: absolute;
+  top: 20px;
+  color: #0f0;
+  font-family: 'Press Start 2P', cursive;
+  text-shadow: 0 0 10px #0f0;
+  font-size: 24px;
+  z-index: 20;
 }
 
 .game-controls {
-  margin-top: 20px;
-  color: #666;
-  font-size: 10px;
-  letter-spacing: 1px;
+  position: absolute;
+  bottom: 20px;
+  color: #fff;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 12px;
+  background: rgba(0,0,0,0.7);
+  padding: 10px;
+  border: 1px solid #0f0;
+  z-index: 20;
 }
