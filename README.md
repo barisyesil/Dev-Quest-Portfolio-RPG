@@ -100,7 +100,7 @@ dotnet run
 The backend will typically start on http://localhost:5174 (check Properties/launchSettings.json).
 
 
-3. Frontend Setup
+### 3. Frontend Setup
 Open a new terminal and navigate to the frontend directory:
 
 ``` Bash
@@ -178,3 +178,39 @@ devquest-portfolio/
 This project is open-source and available under the MIT License.
 ## 👨‍💻 Author
 # Barış Yeşildağ - Tarbarho
+
+## 📸 Here are some screenshots from the project!
+
+### 🕹️ The Arcade Experience
+The game runs inside a responsive arcade cabinet with a dynamic Matrix background.
+<p align="center">
+  <img src="devquest_screenshots/Main_Screen.PNG" width="800" alt="Arcade View">
+</p>
+
+### 🌍 In-Game Exploration
+Players interact with the environment to trigger modals and dialogues.
+<p align="center">
+  <img src="devquest_screenshots/projects_modal.PNG" width="45%" alt="Game Interaction">
+  <img src="devquest_screenshots/dialogue_box.PNG" width="45%" alt="Dialogue System">
+</p>
+
+### 🔐 Admin Panel (CMS)
+A secure, Cyberpunk-themed dashboard to manage content without coding.
+<table width="100%">
+  <tr>
+    <td width="70%">
+      <h4 align="center">Project Management</h4>
+      <img src="devquest_screenshots/Admin_panel.PNG" alt="Admin Projects">
+    </td>
+    <td width="30%">
+      <h4 align="center">Login Screen</h4>
+      <img src="devquest_screenshots/login.PNG" alt="Admin Login">
+    </td>
+  </tr>
+</table>
+
+### 📱 Responsive Guestbook
+Visitors can sign the guestbook in real-time.
+<p align="center">
+  <img src="devquest_screenshots/guest_book.PNG" width="600" alt="Guestbook UI">
+</p>
