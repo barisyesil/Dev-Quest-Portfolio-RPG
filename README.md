@@ -1,178 +1,180 @@
-⚔️ DevQuest: Interactive RPG Portfolio
-(Replace this link with a real screenshot of your game inside the arcade machine)
+# ⚔️ DevQuest: Interactive RPG Portfolio
 
-DevQuest is a unique, gamified personal portfolio web application. Instead of scrolling through a boring PDF resume, visitors explore a retro-styled 2D RPG world, interact with objects (computers, bookshelves, NPCs) to discover my skills, projects, and achievements.
+> *An interactive, gamified personal portfolio where visitors explore a retro 2D world to discover skills, projects, and achievements.*
 
-It features a fully functional Arcade Machine interface, a Real-time Guestbook, and a secure Admin Panel (CMS) to manage content dynamically without touching the code.
+---
 
-🌟 Key Features
-🎮 Interactive RPG World: Built with Phaser 3, featuring a character controller, collision detection, and animated tilemaps.
+## 📖 Overview
 
-🕹️ Arcade Experience: The game is embedded inside a realistic Arcade Machine wrapper with a Matrix-style animated background.
+**DevQuest** reimagines the traditional developer portfolio. Instead of scrolling through a static PDF or HTML page, visitors step into a pixel-art RPG world embedded inside a retro **Arcade Machine**. 
 
-🔐 Secure Admin Panel: A Cyberpunk-themed CMS (/admin) to Create, Read, Update, and Delete (CRUD) projects, achievements, and dialogues.
+Players control a character to explore a virtual office, interacting with objects (computers, bookshelves, NPCs) to unlock content. The project features a robust **Content Management System (CMS)**, allowing the owner to update projects, certificates, and dialogues in real-time without modifying the source code.
 
-💾 Dynamic Content System: All in-game interactions fetch data from a SQL database via a .NET API.
+### ✨ Key Features
 
-📖 Live Guestbook: Visitors can sign the guestbook in real-time.
+* **🎮 Interactive RPG World:** Built with **Phaser 3**, featuring character movement, collision detection, and animated tilemaps.
+* **🕹️ Arcade Experience:** The game is wrapped in a responsive Arcade Machine interface with a Matrix-style animated background.
+* **🔐 Admin Panel (CMS):** A secure, Cyberpunk-themed dashboard (`/admin`) to manage all portfolio content (Projects, Achievements, Dialogues).
+* **💾 Dynamic Content System:** All in-game text and data are fetched dynamically from a SQL database via a **.NET 8 Web API**.
+* **📖 Real-time Guestbook:** Visitors can leave notes and sign the guestbook, which is instantly saved to the database.
+* **📱 Responsive Design:** Optimized for both desktop and mobile viewing.
 
-📱 Responsive Design: Works on desktop and adapts to different screen sizes.
+---
 
-🛠️ Tech Stack
-Frontend
-Framework: React 18 (Vite)
+## 🛠️ Tech Stack
 
-Game Engine: Phaser 3
+### Frontend
+* **Framework:** React 18 (Vite)
+* **Game Engine:** Phaser 3
+* **Routing:** React Router DOM v6
+* **Styling:** CSS3 (Cyberpunk/Retro Aesthetics), CSS Modules
+* **HTTP Client:** Fetch API
 
-Routing: React Router DOM v6
+### Backend
+* **Framework:** ASP.NET Core 8 Web API
+* **Language:** C#
+* **ORM:** Entity Framework Core
+* **Database:** SQL Server (LocalDB or Production)
+* **Authentication:** Environment-based (Admin Panel)
 
-Styling: CSS Modules, Cyberpunk/Retro Aesthetics
+---
 
-HTTP Client: Fetch API
+## 🚀 Installation & Setup
 
-Backend
-Framework: ASP.NET Core 8 Web API
+Follow these steps to run the project locally.
 
-Language: C#
+### Prerequisites
+* **Node.js** (v18 or higher)
+* **b.NET 8 SDK**
+* **SQL Server** (SQL Server Express or LocalDB)
 
-ORM: Entity Framework Core
+### 1. Clone the Repository
+```bash
+git clone [https://github.com/yourusername/devquest-portfolio.git](https://github.com/yourusername/devquest-portfolio.git)
 
-Database: SQL Server (LocalDB or Production)
-
-Security: Environment-based Authentication
-
-🚀 Getting Started
-Follow these instructions to set up the project locally.
-
-Prerequisites
-Node.js (v18 or higher)
-
-.NET 8 SDK
-
-SQL Server (or SQL Server Express / LocalDB)
-
-1. Clone the Repository
-Bash
-git clone https://github.com/yourusername/devquest-portfolio.git
 cd devquest-portfolio
-2. Backend Setup
-Navigate to the API folder:
+```
+### 2. Backend Setup
+Navigate to the API directory:
 
-Bash
+```bash
 cd backend/DevQuest.Api
-Configure Database & Admin Credentials: Create a file named appsettings.Development.json (if it doesn't exist) and configure your connection string and Admin credentials. Do not commit this file to GitHub if it contains real secrets.
+```
 
+Configure Database & Admin Credentials: Create a file named appsettings.Development.json (if it doesn't exist). 
+
+```
 JSON
 {
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
   "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=DevQuestDb;Trusted_Connection=True;"
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=DevQuestDb;Trusted_Connection=True;MultipleActiveResultSets=true"
   },
   "AdminSettings": {
     "Username": "admin",
-    "Password": "CHANGE_THIS_PASSWORD"
+    "Password": "YOUR_STRONG_PASSWORD"
   }
 }
-Run Migrations & Start Server:
+```
 
-Bash
+## Run Migrations & Start Server:
+
+```Bash
+# Install EF Core tools if you haven't
 dotnet tool install --global dotnet-ef
+```
+# Update database
+```
 dotnet ef database update
+```
+# Run the API
+```
 dotnet run
-The backend will typically start on http://localhost:5174 (check your launchSettings.json).
+```
+The backend will typically start on http://localhost:5174 (check Properties/launchSettings.json).
+
 
 3. Frontend Setup
-Open a new terminal and navigate to the frontend folder:
+Open a new terminal and navigate to the frontend directory:
 
-Bash
+``` Bash
 cd frontend
+```
 Install Dependencies:
 
-Bash
+```Bash
 npm install
+```
 Start the Game:
 
-Bash
+```Bash
 npm run dev
+```
 Open your browser and visit http://localhost:5173.
 
-📘 Developer Guide & Architecture
-This section explains how to maintain and extend the project.
+## 📘 Developer Guide
 
-1. The ContentKey System (How Interaction Works)
-The bridge between the Game (Phaser) and the Database (API) is the contentKey.
+### 1. The Interaction System (`ContentKey`)
+The core mechanic linking the game to the database is the **`contentKey`**.
 
-Tiled Map Editor: In Tiled, we place an "Object" on the Interactions layer.
+1.  **Tiled Map Editor:** Objects in the game map (e.g., a computer) are assigned a custom property named `contentKey` (e.g., `project_list`).
+2.  **Frontend:** When the player interacts (presses 'E'), `InteractionManager.js` reads this key and calls the API.
+3.  **Backend:** The API fetches the data associated with that key (Dialogues, Projects, etc.) and returns it to the game.
 
-Custom Property: We give this object a custom property named contentKey (e.g., project_list or about_me).
+### 2. Using the Admin Panel
+You don't need to touch the code to update your portfolio content.
 
-Frontend Logic: When the player presses 'E' near this object, InteractionManager.js reads the contentKey.
+1.  Go to `http://localhost:5173/login`.
+2.  Enter the credentials defined in your `appsettings.json` (or Environment Variables).
+3.  **Dashboard Features:**
+    * **Projects:** Add, Edit, or Delete your portfolio projects.
+    * **Achievements:** Manage certificates and awards.
+    * **Dialogues:** Edit what NPCs or objects say in the game.
+    * **Guestbook:** Moderate or delete guest entries.
 
-API Call: The frontend requests data from the backend using this key.
+### 3. Modifying the Map
+The game uses **Tiled** for map creation.
 
-Result: The specific content (Modal, Dialogue, or Guestbook) associated with that key opens.
+1.  Download [Tiled Map Editor](https://www.mapeditor.org/).
+2.  Open `frontend/public/assets/maps/room1.json` (or the `.tmx` source file).
+3.  **To add a new interaction:**
+    * Select the **Interactions** Object Layer.
+    * Draw a shape (Rectangle) over the object you want to make interactive.
+    * Add a Custom Property: Name `contentKey`, Type `String`, Value `my_new_key`.
+    * Save and Export as JSON.
+4.  **Connect to Data:** Go to the Admin Panel and create a new Dialogue or Project entry with the key `my_new_key`.
 
-2. Managing Content (The Admin Panel)
-You don't need to edit code to change your projects or skills.
+---
 
-Navigate to /admin.
+## 📂 Project Structure
 
-Login with the credentials defined in appsettings.json.
-
-Projects/Achievements: You can Add, Edit, or Delete entries. These updates reflect immediately in the game.
-
-Dialogues: You can edit what NPCs or objects "say" by updating the text associated with their contentKey.
-
-3. Updating the Map
-The game uses Tiled Map Editor.
-
-Install Tiled.
-
-Open frontend/public/assets/maps/room1.json (or the .tmx source file if included).
-
-To add a new interactive object:
-
-Select the Interactions Object Layer.
-
-Draw a rectangle.
-
-Add a property: Name: contentKey, Type: String, Value: your_new_key.
-
-Export: Export the map as JSON to the assets/maps folder.
-
-Backend: Go to the Admin Panel and create a new Dialogue or Project entry that matches your_new_key.
-
-📂 Project Structure
+```text
 devquest-portfolio/
 ├── backend/
-│   ├── Controllers/       # API Endpoints (Content, Auth, Guestbook)
-│   ├── Data/              # EF Core DbContext
-│   ├── Models/            # Database Entities
-│   └── Program.cs         # App Configuration
+│   ├── DevQuest.Api/
+│   │   ├── Controllers/       # API Endpoints (Content, Auth, Guestbook)
+│   │   ├── Data/              # EF Core Context & Migrations
+│   │   ├── Models/            # Database Entities
+│   │   └── Program.cs         # App Configuration
 ├── frontend/
-│   ├── public/assets/     # Game sprites, tilesets, and JSON maps
+│   ├── public/
+│   │   └── assets/            # Game assets (sprites, maps, audio)
 │   ├── src/
-│   │   ├── components/    # React UI (AdminPanel, Login, GuestBook, Modals)
-│   │   ├── services/      # API Fetch Logic (api.js)
-│   │   ├── utils/         # Phaser Interaction Logic
-│   │   ├── Game.jsx       # Main Phaser Game Component
-│   │   └── App.jsx        # Main Layout & Routing
+│   │   ├── components/        # React UI (AdminPanel, Login, GuestBook)
+│   │   ├── services/          # API Fetch Logic (api.js)
+│   │   ├── utils/             # Phaser Interaction Logic
+│   │   ├── Game.jsx           # Main Phaser Game Component
+│   │   └── App.jsx            # Main Layout & Routing
 │   └── package.json
 └── README.md
-🛡️ Security Note
-Environment Variables: The Admin Login uses appsettings.json or Environment Variables. Never commit your real passwords to GitHub.
-
-The .gitignore file is configured to exclude sensitive settings files.
-
-📜 License
+```
+## 📜 License
 This project is open-source and available under the MIT License.
-
-👨‍💻 Author
-[Your Name]
-
-Computer Engineering Student & Full Stack Developer
-
-[LinkedIn Profile]
-
-[Kaggle Profile]
-
-Built with ❤️ and Pixel Art.
+## 👨‍💻 Author
+# Barış Yeşildağ - Tarbarho
