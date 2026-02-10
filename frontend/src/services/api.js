@@ -1,6 +1,19 @@
 const API_BASE_URL = 'http://localhost:5174/api'; // Backend portunu kontrol et (5000, 5123 vs olabilir)
 
 export const api = {
+  login: async (username, password) => {
+    const response = await fetch(`${API_BASE_URL}/Auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    if (!response.ok) {
+      throw new Error('Giriş başarısız');
+    }
+
+    return await response.json();
+  },
   // --- OKUMA İŞLEMLERİ (GET) ---
   getItems: async (category) => {
     const response = await fetch(`${API_BASE_URL}/Content/items/${category}`);

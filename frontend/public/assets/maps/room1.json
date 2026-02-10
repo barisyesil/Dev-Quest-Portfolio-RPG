@@ -275,6 +275,24 @@
                  "width":30.6666666666667,
                  "x":137,
                  "y":122.666666666667
+                }, 
+                {
+                 "ellipse":true,
+                 "height":19.3333333333333,
+                 "id":23,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"label",
+                         "type":"string",
+                         "value":"Portal"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":13,
+                 "x":33,
+                 "y":25
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -308,7 +326,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":23,
+ "nextobjectid":25,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
