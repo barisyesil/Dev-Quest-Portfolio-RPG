@@ -189,7 +189,7 @@
                         {
                          "name":"label",
                          "type":"string",
-                         "value":"AI_Secretary"
+                         "value":"AI_Help"
                         }],
                  "rotation":0,
                  "type":"",
@@ -252,6 +252,29 @@
                  "width":4.05833861762839,
                  "x":66.9625871908688,
                  "y":30.4375396322131
+                }, 
+                {
+                 "ellipse":true,
+                 "height":43,
+                 "id":21,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"contentKey",
+                         "type":"string",
+                         "value":"flower"
+                        }, 
+                        {
+                         "name":"label",
+                         "type":"string",
+                         "value":"\u25bc"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":30.6666666666667,
+                 "x":137,
+                 "y":122.666666666667
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -285,7 +308,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":21,
+ "nextobjectid":23,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

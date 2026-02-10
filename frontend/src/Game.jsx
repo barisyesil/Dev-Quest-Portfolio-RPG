@@ -1,37 +1,52 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import InteractionManager from './utils/InteractionManager';
 
 const Game = () => {
-  
+  // Oyun instance'ını referans olarak tutalım
+  const gameRef = useRef(null);
+
   useEffect(() => {
     
-    const config = {
-      type: Phaser.AUTO,
-      // Arcade ekranının oranına göre bu çözünürlüğü artırıp azaltabilirsin.
-      // 800x600 klasik bir orandır ve çoğu arcade ekranına uyar.
-      width: 800, 
-      height: 600,
-      parent: 'game-container', // HTML'deki bu ID'ye canvas'ı inject edecek
-      pixelArt: true,
-      transparent: true, // Arka plan şeffaf (CSS'deki siyah görünecek)
-      physics: {
-        default: 'arcade',
-        arcade: { 
-            gravity: { y: 0 },
-            debug: false // Geliştirme bitince false yap
-        }
-      },
-      scale: {
-        // FIT modu, canvas'ı parent div'in boyutuna sığdırır.
-        // Arcade ekranı div'i responsive olduğu için bu ayar canvas'ın bozulmadan küçülmesini sağlar.
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-      },
-      scene: { preload, create, update }
-    };
+    // Eğer önceki bir oyun instance'ı varsa temizle (Strict Mode için)
+    if (gameRef.current) {
+        gameRef.current.destroy(true);
+        gameRef.current = null;
+    }
 
-    const game = new Phaser.Game(config);
+    // KRİTİK DEĞİŞİKLİK: Phaser'ı 100ms gecikmeli başlat
+    // Bu, CSS yüklendikten ve div boyutları oluştuktan sonra çalışmasını sağlar.
+    const timer = setTimeout(() => {
+        const config = {
+            type: Phaser.AUTO,
+            // Arcade ekranının oranına göre bu çözünürlüğü artırıp azaltabilirsin.
+            width: 800, 
+            height: 600,
+            parent: 'game-container', // HTML'deki bu ID'ye canvas'ı inject edecek
+            pixelArt: true,
+            transparent: true, // Arka plan şeffaf
+            physics: {
+                default: 'arcade',
+                arcade: { 
+                    gravity: { y: 0 },
+                    debug: false 
+                }
+            },
+            scale: {
+                // FIT modu, canvas'ı parent div'in boyutuna sığdırır.
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+                // Resize olaylarını daha sıkı takip et
+                resizeInterval: 200 
+            },
+            scene: { preload, create, update }
+        };
+
+        // Oyunu başlat ve ref'e ata
+        gameRef.current = new Phaser.Game(config);
+
+    }, 100); // 100ms gecikme
+
 
     function preload() {
         this.load.tilemapTiledJSON('map', '/assets/maps/room1.json');
@@ -64,25 +79,22 @@ const Game = () => {
         wallsLayer.setCollisionByExclusion([-1]);
         interiorsLayer.setCollisionByExclusion([-1]);
 
-        // Kamera Sınırları (Map dışına çıkmayı engelle)
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
-        // Spawn Point
         const spawnPoint = map.findObject('Interactions', obj => obj.name === 'spawn_point');
         const spawnX = spawnPoint ? spawnPoint.x : 200;
         const spawnY = spawnPoint ? spawnPoint.y : 200;
 
         this.player = this.physics.add.sprite(spawnX, spawnY, 'player', 0);
         this.player.body.setSize(8, 8).setOffset(12, 24);
-        this.player.setCollideWorldBounds(true); // Dünya sınırlarından çıkamasın
+        this.player.setCollideWorldBounds(true); 
 
         this.physics.add.collider(this.player, wallsLayer);
         this.physics.add.collider(this.player, interiorsLayer);
 
-        // Animasyonlar
         const anims = this.anims;
-        if (!anims.exists('idle-down')) { // Animasyon tekrar oluşturulmasın
+        if (!anims.exists('idle-down')) { 
             anims.create({ key: 'idle-down', frames: anims.generateFrameNumbers('player', { start: 0, end: 3 }), frameRate: 6, repeat: -1 });
             anims.create({ key: 'idle-right', frames: anims.generateFrameNumbers('player', { start: 4, end: 7 }), frameRate: 6, repeat: -1 });
             anims.create({ key: 'idle-left', frames: anims.generateFrameNumbers('player', { start: 8, end: 11 }), frameRate: 6, repeat: -1 });
@@ -95,17 +107,15 @@ const Game = () => {
         }
 
         this.cameras.main.startFollow(this.player);
-        this.cameras.main.setZoom(2.5); // Arcade ekranı küçük olduğu için zoom'u biraz azalttım (daha geniş açı)
+        this.cameras.main.setZoom(2.5); 
         
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        // Interaction Manager
         this.interactionManager = new InteractionManager(this);
         this.interactionManager.init(map);
     }
 
     function update() {
-        // UI Açıksa Oyunu Durdur
         if (window.isUIOpen) {
             this.player.setVelocity(0);
             const currentAnim = this.player.anims.currentAnim?.key || 'idle-down';
@@ -118,13 +128,11 @@ const Game = () => {
             return; 
         }
 
-        // UI Kapalıysa Kontrolleri Aç
         if (!this.input.keyboard.enabled) {
             this.input.keyboard.enabled = true;
         }
 
-        // Hareket Mantığı
-        const speed = 125;
+        const speed = 80;
         this.player.setVelocity(0);
         let moved = false;
 
@@ -150,7 +158,6 @@ const Game = () => {
 
         if (!moved) {
             const currentAnim = this.player.anims.currentAnim ? this.player.anims.currentAnim.key.split('-')[1] : 'down';
-            // Eğer undefined gelirse varsayılan olarak 'down' kullan
             const safeAnim = currentAnim || 'down'; 
             this.player.anims.play(`idle-${safeAnim}`, true);
         }
@@ -158,11 +165,20 @@ const Game = () => {
         if (this.interactionManager) this.interactionManager.update();
     }
 
-    return () => game.destroy(true);
-  }, []);
+    // CLEANUP FONKSİYONU
+    return () => {
+        // Timer'ı temizle (Hafıza sızıntısı olmasın)
+        clearTimeout(timer);
+        
+        // Oyunu yok et
+        if (gameRef.current) {
+            gameRef.current.destroy(true);
+            gameRef.current = null;
+        }
+    };
+  }, []); // Boş dependency array
 
-  // CSS: %100 genişlik ve yükseklik vererek parent div (.game-screen) içine tam oturmasını sağla
-  return <div id="game-container" style={{ width: '100%', height: '100%' }} />;
+  return <div id="game-container" style={{ width: '100%', height: '105%' }} />;
 };
 
 export default Game;

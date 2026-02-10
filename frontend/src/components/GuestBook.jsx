@@ -90,6 +90,7 @@ const GuestBook = ({ onClose }) => {
                   type="text" 
                   value={formData.author}
                   onChange={(e) => setFormData({...formData, author: e.target.value})}
+                  onKeyDown={(e) => e.stopPropagation()} // Phaser'ın 'W,A,S,D' veya 'E' duymasını engeller
                   style={styles.pixelInput}
                   maxLength={15}
                   required
@@ -100,6 +101,7 @@ const GuestBook = ({ onClose }) => {
                 <textarea 
                   value={formData.message}
                   onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  onKeyDown={(e) => e.stopPropagation()}
                   style={{...styles.pixelInput, height: '100px', resize: 'none'}}
                   maxLength={100}
                   required
@@ -118,27 +120,77 @@ const GuestBook = ({ onClose }) => {
 };
 
 const styles = {
-  // ... önceki overlay ve bookContainer stilleri aynı ...
-  overlay: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000 },
-  bookContainer: { display: 'flex', width: '90%', height: '80%', backgroundColor: '#6b4c35', border: '6px solid #3e2723', boxShadow: '15px 15px 0px rgba(0,0,0,0.4)', transition: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)', overflow: 'hidden' },
-  leftPage: { flex: 1, backgroundColor: '#f5f5dc', margin: '15px 5px 15px 15px', padding: '20px', border: '2px solid #000', display: 'flex', flexDirection: 'column' },
-  rightPage: { flex: 1, backgroundColor: '#f5f5dc', margin: '15px 15px 15px 5px', padding: '20px', border: '2px solid #000', position: 'relative' },
-  pageTitle: { fontFamily: "'Press Start 2P', cursive", fontSize: '10px', textAlign: 'center', borderBottom: '2px solid #000', paddingBottom: '10px', marginBottom: '15px' },
-  entryList: { overflowY: 'auto', flex: 1 },
-  entryItem: { marginBottom: '15px', borderBottom: '1px dashed #999', paddingBottom: '5px' },
-  entryAuthor: { fontSize: '8px', color: '#8b0000', fontWeight: 'bold', marginBottom: '4px' },
-  entryText: { fontSize: '9px', color: '#333', lineHeight: '1.4', fontFamily: 'monospace' },
-  entryDate: { fontSize: '7px', color: '#777' },
-  closeBtn: { position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Press Start 2P', cursive", fontSize: '12px' },
+  // --- ANA KAPLAYICILAR ---
+  overlay: { 
+    position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', 
+    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000 
+  },
+  bookContainer: { 
+    display: 'flex', width: '90%', height: '80%', 
+    backgroundColor: '#6b4c35', border: '6px solid #3e2723', 
+    boxShadow: '15px 15px 0px rgba(0,0,0,0.4)', 
+    transition: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
+    overflow: 'hidden' 
+  },
+
+  // --- SOL VE SAĞ SAYFA (LAYOUT DÜZELTMESİ) ---
+  leftPage: { 
+    flex: 1, 
+    minWidth: 0, /* KRİTİK: İçerik taşsa bile sayfa genişlemez, %50 kalır */
+    backgroundColor: '#f5f5dc', margin: '15px 5px 15px 15px', padding: '20px', 
+    border: '2px solid #000', display: 'flex', flexDirection: 'column' 
+  },
+  rightPage: { 
+    flex: 1, 
+    minWidth: 0, /* KRİTİK: Sağ sayfanın ezilmesini engeller */
+    backgroundColor: '#f5f5dc', margin: '15px 15px 15px 5px', padding: '20px', 
+    border: '2px solid #000', position: 'relative' 
+  },
+
+  // --- İÇERİK DETAYLARI ---
+  pageTitle: { 
+    fontFamily: "'Press Start 2P', cursive", fontSize: '10px', textAlign: 'center', 
+    borderBottom: '2px solid #000', paddingBottom: '10px', marginBottom: '15px' 
+  },
+  entryList: { 
+    overflowY: 'auto', flex: 1, paddingRight: '10px' /* Scrollbar için boşluk */
+  },
   
-  // FORM STILLERI
+  entryItem: { 
+    marginBottom: '15px', borderBottom: '1px dashed #999', paddingBottom: '5px',
+    display: 'flex', flexDirection: 'column' /* İçerikleri alt alta zorla */
+  },
+  
+  entryAuthor: { 
+    fontSize: '12px', color: '#8b0000', fontWeight: 'bold', marginBottom: '4px',
+    wordBreak: 'break-all' /* Çok uzun isim girilirse satır atlat */
+  },
+  
+  // --- METİN DÜZELTMESİ (TEXT WRAPPING) ---
+  entryText: { 
+    fontSize: '14px', color: '#333', lineHeight: '1.4', fontFamily: 'monospace',
+    whiteSpace: 'pre-wrap',       /* Satır sonlarını koru ama uzun satırları kır */
+    overflowWrap: 'break-word',   /* Kelime bütünlüğünü koruyarak kır */
+    wordBreak: 'break-word',      /* Gerekirse kelimeyi böl */
+    maxWidth: '95%'              /* Kutudan taşmayı engelle */
+  },
+  
+  entryDate: { fontSize: '7px', color: '#777', marginTop: '3px', alignSelf: 'flex-end' },
+  closeBtn: { 
+    position: 'absolute', top: '10px', right: '10px', background: 'none', 
+    border: 'none', cursor: 'pointer', fontFamily: "'Press Start 2P', cursive", fontSize: '12px' 
+  },
+  
+  // --- FORM STILLERI ---
   formContainer: { display: 'flex', flexDirection: 'column', height: '100%' },
   formTitle: { fontFamily: "'Press Start 2P', cursive", fontSize: '10px', marginBottom: '20px', color: '#2e7d32' },
   inputGroup: { marginBottom: '15px', display: 'flex', flexDirection: 'column', gap: '5px' },
   label: { fontSize: '8px', fontWeight: 'bold' },
   pixelInput: { 
-    border: '2px solid #000', padding: '8px', fontSize: '10px', 
-    fontFamily: 'monospace', backgroundColor: '#fff' 
+    border: '2px solid #000', padding: '8px', fontSize: '15px', 
+    fontFamily: 'monospace', backgroundColor: '#fff',
+    width: '100%', boxSizing: 'border-box' /* Padding, dahil hesapla */
   },
   formButtons: { display: 'flex', gap: '10px', marginTop: 'auto' },
   pixelBtn: { backgroundColor: '#2e7d32', color: 'white', border: '4px solid #1b5e20', padding: '10px 20px', cursor: 'pointer', fontFamily: "'Press Start 2P', cursive", fontSize: '8px' },

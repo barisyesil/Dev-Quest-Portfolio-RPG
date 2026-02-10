@@ -30,15 +30,15 @@ export default class InteractionManager {
                 this.interactionPoints.add(sensor);
 
                 // 2. Kalıcı Etiket (Label) Oluşturma
-                const label = this.scene.add.text(centerX, centerY - 25, labelText, {
-                    fontFamily: '"Press Start 2P", cursive',
-                    fontSize: '8px',
-                    fill: '#f1c40f', // Altın sarısı, daha dikkat çekici
-                    stroke: '#000000',
-                    strokeThickness: 3
-                });
-                label.setOrigin(0.5);
-                label.setDepth(2000);
+                const label = this.scene.add.text(centerX, centerY - 35, labelText, {
+                fontFamily: '"Press Start 2P", cursive',
+                fontSize: '7px', // Daha büyük
+                fill: '#ffffff',
+                stroke: '#000000', // Simsiyah kalın çerçeve
+                strokeThickness: 4
+            });
+            label.setOrigin(0.5);
+            label.setDepth(2000);
                 
                 // Etiketi ve ilgili sensörü eşleştirerek sakla
                 this.labels.push({
