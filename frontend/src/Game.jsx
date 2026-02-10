@@ -130,11 +130,11 @@ const Game = () => {
 
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-speed);
-            this.player.anims.play('walk-left', true);
+            this.player.anims.play('walk-right', true);
             moved = true;
         } else if (this.cursors.right.isDown) {
             this.player.setVelocityX(speed);
-            this.player.anims.play('walk-right', true);
+            this.player.anims.play('walk-left', true);
             moved = true;
         }
 
