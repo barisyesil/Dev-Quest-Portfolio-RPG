@@ -1,22 +1,18 @@
 import React, { useState } from 'react';
-import { dataMap } from '../data/dataRegistry'; 
 
-// dataOverride prop'unu ekledik
-const PixelModal = ({ contentKey, onClose, dataOverride }) => {
+// dataOverride prop'unu kullanıyoruz, dataMap ve statik veriler artık yok.
+const PixelModal = ({ onClose, dataOverride }) => {
   const [selectedId, setSelectedId] = useState(null);
   
-  // ÖNCELİK SIRASI:
-  // 1. App.jsx'ten gelen canlı veri (dataOverride)
-  // 2. dataRegistry'deki statik veri (Yedek)
-  const incomingData = dataOverride || (dataMap[contentKey] ? dataMap[contentKey].data : null);
+  // Sadece App.jsx'ten gelen dataOverride'ı kullan
+  const incomingData = dataOverride;
   
   // Güvenlik kontrolü
   if (!incomingData || !incomingData.items) {
-    console.error("Modal verisi bulunamadı:", contentKey);
+    console.warn("Modal verisi bulunamadı veya boş.");
     return null;
   }
 
-  // Veri yapısı artık direkt { title: "...", items: [...] } şeklinde geliyor
   const data = incomingData; 
 
   return (
@@ -36,21 +32,22 @@ const PixelModal = ({ contentKey, onClose, dataOverride }) => {
                 onClick={() => setSelectedId(selectedId === item.id ? null : item.id)}
                 style={{
                   ...styles.itemBtn,
+                  backgroundColor: selectedId === item.id ? '#000088' : '#000055', // Seçiliyken biraz daha açık
                   color: selectedId === item.id ? '#f1c40f' : 'white',
                 }}
               >
-                {selectedId === item.id ? '> ' : '  '} {item.name}
+                {selectedId === item.id ? '> ' : '   '} {item.name || item.Name}
               </button>
               
               {selectedId === item.id && (
                 <div style={styles.detailsBox}>
-                  <p style={styles.description}>{item.description}</p>
+                  <p style={styles.description}>{item.description || item.Description}</p>
                   
                   {/* Etiketler */}
                   <div style={styles.tagContainer}>
                     {/* App.jsx'te zaten split işlemi yapıldığı için burada direkt map'liyoruz */}
-                    {item.tags && Array.isArray(item.tags) && item.tags.map(tag => (
-                      <span key={tag} style={styles.tag}>[{tag.trim()}]</span>
+                    {item.tags && Array.isArray(item.tags) && item.tags.map((tag, index) => (
+                      <span key={index} style={styles.tag}>[{tag.trim()}]</span>
                     ))}
                   </div>
 
@@ -65,7 +62,8 @@ const PixelModal = ({ contentKey, onClose, dataOverride }) => {
             </div>
           ))}
         </div>
-        <div style={styles.footer}>PRESS ESC TO RETURN</div>
+        
+        <div style={styles.footer}>PRESS ESC OR CLICK [X] TO RETURN</div>
       </div>
     </div>
   );

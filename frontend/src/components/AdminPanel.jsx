@@ -9,26 +9,42 @@ const AdminPanel = () => {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({}); // Form verileri burada tutulacak
+  const [formData, setFormData] = useState({}); 
 
+  // FIX: fetchData'yı useEffect içine aldık veya useCallback ile sarmalayabiliriz.
+  // Burada useEffect içinde tanımlamak en kolayı.
   useEffect(() => {
-    fetchData();
-  }, [activeTab]);
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+          let data = [];
+          if (activeTab === 'projects') data = await api.getItems('Project');
+          else if (activeTab === 'achievements') data = await api.getItems('Achievement');
+          else if (activeTab === 'dialogues') data = await api.getDialogues();
+          else if (activeTab === 'guestbook') data = await api.getGuestBook();
+          setItems(data);
+        } catch (error) {
+          console.error("Veri hatası:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-  const fetchData = async () => {
+    fetchData();
+  }, [activeTab]); // Sadece activeTab değişince çalışır
+
+  // Listeyi manuel yenilemek için yardımcı fonksiyon
+  const reloadData = async () => {
     setLoading(true);
     try {
-      let data = [];
-      if (activeTab === 'projects') data = await api.getItems('Project');
-      else if (activeTab === 'achievements') data = await api.getItems('Achievement');
-      else if (activeTab === 'dialogues') data = await api.getDialogues();
-      else if (activeTab === 'guestbook') data = await api.getGuestBook();
-      setItems(data);
-    } catch (error) {
-      console.error("Veri hatası:", error);
-    } finally {
-      setLoading(false);
-    }
+        let data = [];
+        if (activeTab === 'projects') data = await api.getItems('Project');
+        else if (activeTab === 'achievements') data = await api.getItems('Achievement');
+        else if (activeTab === 'dialogues') data = await api.getDialogues();
+        else if (activeTab === 'guestbook') data = await api.getGuestBook();
+        setItems(data);
+    } catch (error) { console.error(error); } 
+    finally { setLoading(false); }
   };
 
   // SİLME
@@ -36,7 +52,7 @@ const AdminPanel = () => {
     if(!window.confirm("Bu kaydı kalıcı olarak silmek istediğine emin misin?")) return;
     try {
       await api.deleteItem(activeTab, id);
-      fetchData(); // Listeyi yenile
+      reloadData(); 
     } catch (error) {
       console.error("Silinemedi:", error);
       alert("Silme işlemi başarısız oldu.");
@@ -45,30 +61,30 @@ const AdminPanel = () => {
 
   // DÜZENLEME MODUNU AÇ
   const handleEdit = (item) => {
-    setFormData({ ...item }); // Seçili öğeyi forma kopyala
+    setFormData({ ...item }); 
     setIsModalOpen(true);
   };
 
   // YENİ EKLEME MODUNU AÇ
   const handleAddNew = () => {
-    setFormData({}); // Formu temizle
+    setFormData({}); 
     setIsModalOpen(true);
   };
 
-  // KAYDET (Backend'e Gönder)
+  // KAYDET
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await api.saveItem(activeTab, formData);
       setIsModalOpen(false);
-      fetchData(); // Listeyi yenile
+      reloadData(); 
     } catch (error) {
       console.error("Kaydedilemedi:", error);
       alert("Hata oluştu, konsolu kontrol et.");
     }
   };
 
-  // FORM INPUTLARI (Kategoriye göre değişir)
+  // FORM INPUTLARI
   const renderFormFields = () => {
     if (activeTab === 'guestbook') return <p style={{color: '#aaa', fontStyle: 'italic'}}>Guestbook entries cannot be edited here, only deleted.</p>;
 
@@ -76,7 +92,7 @@ const AdminPanel = () => {
       return (
         <>
           <div className="form-group">
-            <label className="form-label">Key (Unique ID for Code)</label>
+            <label className="form-label">Key (Unique ID)</label>
             <input 
               className="form-input" 
               value={formData.key || ''} 
@@ -146,18 +162,20 @@ const AdminPanel = () => {
 
   return (
     <div className="admin-container">
-      {/* Sidebar - (Değişmedi, önceki kodla aynı) */}
+      {/* Sidebar */}
       <div className="admin-sidebar">
         <div className="admin-logo">DEV:CONSOLE</div>
+        
         {['projects', 'achievements', 'dialogues', 'guestbook'].map(tab => (
-           <button 
-             key={tab}
-             className={`nav-btn ${activeTab === tab ? 'active' : ''}`} 
-             onClick={() => setActiveTab(tab)}
-           >
-             {tab.toUpperCase()}
-           </button>
+            <button 
+              key={tab}
+              className={`nav-btn ${activeTab === tab ? 'active' : ''}`} 
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab.toUpperCase()}
+            </button>
         ))}
+
         <a href="/" className="back-link">← Return to Game World</a>
       </div>
 
@@ -171,31 +189,44 @@ const AdminPanel = () => {
 
         {/* TABLO ALANI */}
         <div className="table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name / Key</th>
-                  <th>Description</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map(item => (
-                  <tr key={item.id}>
-                    <td>#{item.id}</td>
-                    <td>{item.name || item.author || item.key}</td>
-                    <td>{item.description || item.text || item.message}</td>
-                    <td>
-                      {activeTab !== 'guestbook' && (
-                        <button className="action-btn edit-btn" onClick={() => handleEdit(item)}>EDIT</button>
-                      )}
-                      <button className="action-btn del-btn" onClick={() => handleDelete(item.id)}>DEL</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {/* FIX: Loading göstergesi eklendi */}
+            {loading ? (
+                <div style={{color: '#0f0', padding: '20px', fontFamily: 'monospace'}}>
+                    LOADING DATABASE...
+                </div>
+            ) : (
+                <table className="data-table">
+                <thead>
+                    <tr>
+                    <th>ID</th>
+                    <th>Name / Key</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {items.length === 0 ? (
+                        <tr><td colSpan="4" style={{textAlign:'center', padding:'20px'}}>No records found.</td></tr>
+                    ) : (
+                        items.map(item => (
+                        <tr key={item.id}>
+                            <td>#{item.id}</td>
+                            <td>{item.name || item.author || item.key}</td>
+                            <td style={{maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                {item.description || item.text || item.message}
+                            </td>
+                            <td>
+                            {activeTab !== 'guestbook' && (
+                                <button className="action-btn edit-btn" onClick={() => handleEdit(item)}>EDIT</button>
+                            )}
+                            <button className="action-btn del-btn" onClick={() => handleDelete(item.id)}>DEL</button>
+                            </td>
+                        </tr>
+                        ))
+                    )}
+                </tbody>
+                </table>
+            )}
         </div>
       </div>
 

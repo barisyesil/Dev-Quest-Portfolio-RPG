@@ -18,9 +18,12 @@ const GuestBook = ({ onClose }) => {
       console.error("Entries yüklenemedi:", err);
     }
   };
+
+  loadEntries(); //Kendime not: İleride GuestBook sıkıntı çıkarırsa useEffect içine al.
+  
   useEffect(() => {
     const timer = setTimeout(() => setIsOpen(true), 10);
-    loadEntries();           // Bileşen açıldığında verileri yükle
+              
     return () => clearTimeout(timer);
   }, []);
   const handleSubmit = async (e) => {
@@ -37,7 +40,7 @@ const GuestBook = ({ onClose }) => {
     setView('read');
   };
 
-  // Tarih ve Saat Formatlayıcı (Örn: 08.02.2026 14:30)
+  // Tarih ve Saat Formatlayıcı
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString('tr-TR', {

@@ -1,38 +1,52 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { dataMap } from '../data/dataRegistry';
 import { audioManager } from '../utils/AudioManager';
 
-const DialogueBox = ({ contentKey, dataOverride }) => {
+// contentKey prop'una artık ihtiyacımız yok, sadece veriyi (dataOverride) alıyoruz.
+const DialogueBox = ({ dataOverride }) => {
   const [displayText, setDisplayText] = useState('');
   const [isFinished, setIsFinished] = useState(false);
   
-  // ÖNCELİK: Canlı veri -> Statik veri -> Varsayılan metin
-  const textSource = dataOverride || (dataMap[contentKey] ? dataMap[contentKey].data : null);
-  const fullText = textSource?.text || "No text data found...";
-
   const indexRef = useRef(0);
 
+  // Sadece App.jsx'ten gelen veriyi kullan
+  const fullText = dataOverride?.text || "No text data found...";
+
   useEffect(() => {
-    indexRef.current = 0;
-    setDisplayText('');
-    setIsFinished(false);
+    let typeInterval;
 
-    const timer = setInterval(() => {
-      indexRef.current += 1;
-      const currentSlice = fullText.slice(0, indexRef.current);
-      setDisplayText(currentSlice);
-      if (indexRef.current % 2 === 0) { // Her 2 harfte bir ses efekti
-        audioManager.playSFX('type');
-      }
-       // Her harf için daktilo sesi
+    // State güncellemelerini asenkron hale getirerek ESLint hatasını önlüyoruz
+    const startTimeout = setTimeout(() => {
+        // Başlangıç durumunu sıfırla
+        indexRef.current = 0;
+        setDisplayText('');
+        setIsFinished(false);
 
-      if (indexRef.current >= fullText.length) {
-        clearInterval(timer);
-        setIsFinished(true);
-      }
-    }, 40);
+        // Yazı yazma döngüsü
+        typeInterval = setInterval(() => {
+            indexRef.current += 1;
+            
+            // Metni dilimleyerek göster
+            const currentSlice = fullText.slice(0, indexRef.current);
+            setDisplayText(currentSlice);
 
-    return () => clearInterval(timer);
+            // Ses Efekti: Her 3 harfte bir çalsın (Kulak tırmalamasın diye)
+            if (indexRef.current % 3 === 0) {
+                audioManager.playSFX('type');
+            }
+
+            // Bitiş Kontrolü
+            if (indexRef.current >= fullText.length) {
+                clearInterval(typeInterval);
+                setIsFinished(true);
+            }
+        }, 30); // Yazı hızı (30ms idealdir)
+    }, 0);
+
+    // Cleanup: Bileşen kapanırsa timer'ları temizle
+    return () => {
+        clearTimeout(startTimeout);
+        if (typeInterval) clearInterval(typeInterval);
+    };
   }, [fullText]);
 
   return (
@@ -42,7 +56,7 @@ const DialogueBox = ({ contentKey, dataOverride }) => {
         
         {isFinished && (
           <div style={styles.arrowContainer}>
-            <span style={styles.arrowAnim}>▼</span> [ ESC ]
+            <span style={styles.arrowAnim}>▼</span> [ ESC ] TO CLOSE
           </div>
         )}
       </div>
@@ -93,7 +107,7 @@ const styles = {
   }
 };
 
-// CSS animasyonunu global bir style tag'i ile ekleyelim ki jsx içinde çalışsın
+// CSS animasyonunu global olarak ekliyoruz (Burası kalabilir)
 const styleSheet = document.createElement("style");
 styleSheet.type = "text/css";
 styleSheet.innerText = `
