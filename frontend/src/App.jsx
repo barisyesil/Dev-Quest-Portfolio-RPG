@@ -5,6 +5,7 @@ import PixelModal from './components/PixelModal';
 import DialogueBox from './components/DialogueBox';
 import GuestBook from './components/GuestBook';
 import { api } from './services/api';
+import SocialPanel from './components/SocialPanel';
 
 function App() {
   const [activeContent, setActiveContent] = useState(null);
@@ -16,9 +17,17 @@ function App() {
     const fetchPortfolioData = async () => {
       try {
         setLoading(true);
-        const projects = await api.getItems('Project');
-        const achievements = await api.getItems('Achievement');
-        const dialogues = await api.getDialogues();
+        // Hataları yakalamak için try-catch bloğu içinde kalmalı
+        let projects = [], achievements = [], dialogues = [];
+        
+        try {
+            projects = await api.getItems('Project');
+            achievements = await api.getItems('Achievement');
+            dialogues = await api.getDialogues();
+        } catch (apiError) {
+            console.error("API Verisi Çekilemedi (Offline Mod olabilir):", apiError);
+            // API hatası olsa bile oyunun açılması için boş array devam et
+        }
 
         // API'den gelen verileri bileşenlerin beklediği formata (Registry) dönüştür
         const registry = {
@@ -39,12 +48,13 @@ function App() {
             } 
           },
           // Ziyaretçi Defteri (Statik tetikleyici)
-          guest_book_interaction: { type: 'guestbook' }
+          guest_book_interaction: { type: 'guestbook' },
+          
+          // --- EKLENEN KISIM: Social Portal Registry Kaydı ---
+          social_portal: { type: 'social_portal' } 
         };
 
-
         // Dinamik Diyalogları (Easter Eggler, NPC'ler) Registry'e ekle
- 
         dialogues.forEach(d => { 
           registry[d.key] = {  
             type: 'dialogue', 
@@ -54,7 +64,7 @@ function App() {
 
         setDynamicRegistry(registry);
       } catch (error) {
-        console.error("Backend bağlantı hatası:", error);
+        console.error("Genel hata:", error);
       } finally {
         setLoading(false);
       }
@@ -65,23 +75,36 @@ function App() {
 
   // 2. Etkileşim ve Klavye Yönetimi
   useEffect(() => {
+    // UI açık mı kontrolü (window objesine atıyoruz ki Phaser erişebilsin)
     window.isUIOpen = activeContent !== null;
 
     const handleOpenInteraction = (event) => {
       if (window.isUIOpen) return; 
 
-      const key = event.detail.contentKey;
-      const content = dynamicRegistry[key]; // Veriyi dinamik registry'den al
+      const { contentKey, type, isStatic } = event.detail;
+
+      console.log("Interaction Tetiklendi:", contentKey); // Debug log
+
+      // Eğer InteractionManager'dan özel bir tip geldiyse (örn: social_portal)
+      if (type && isStatic) {
+          setActiveContent({ type, key: contentKey });
+          return;
+      }
+
+      // Yoksa Registry'den bak
+      const content = dynamicRegistry[contentKey]; 
       
       if (content) {
-        console.log("İçerik Açılıyor:", key);
-        setActiveContent({ ...content, key: key });
+        setActiveContent({ ...content, key: contentKey });
+      } else {
+          console.warn(`Registry'de ${contentKey} bulunamadı!`);
       }
     };
 
     const handleKeyDown = (e) => {
       if (!activeContent) return;
 
+      // Input alanlarına yazı yazarken modal kapanmasın
       const isTyping = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
       
       if (e.key === 'Escape') {
@@ -90,13 +113,15 @@ function App() {
       }
 
       if (isTyping) {
-        e.stopPropagation();
+        // Space tuşu formlarda boşluk bırakmalı, modalı kapatmamalı
+        e.stopPropagation(); 
         return;
       }
 
-      if (e.key === ' ' || e.key.toLowerCase() === 'e') {
-        setActiveContent(null);
-      }
+      // Sadece 'Escape' veya etkileşim tuşu dışında bir tuşla kapatmak istersen burayı düzenle
+      // Şimdilik 'E' veya 'Space' ile de kapatma özelliği açık kalsın mı?
+      // Kullanıcı deneyimi için genelde 'Escape' veya 'X' butonu yeterlidir.
+      // E tuşuna basınca kapanması bazen input yazarken karışıklık yaratabilir (yukarıda engelledik gerçi).
     };
 
     window.addEventListener('openModal', handleOpenInteraction);
@@ -106,13 +131,15 @@ function App() {
       window.removeEventListener('openModal', handleOpenInteraction);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeContent, dynamicRegistry]); // dynamicRegistry bağımlılığı önemli
+  }, [activeContent, dynamicRegistry]); 
 
-  // Yükleme Ekranı (Retro Stil)
+  // Yükleme Ekranı
   if (loading) {
     return (
-      <div className="app-main-container" style={{ justifyContent: 'center' }}>
-        <div className="loading-text">LOADING DATABASE...</div>
+      <div className="app-main-container" style={{ justifyContent: 'center', display: 'flex' }}>
+        <div className="loading-text" style={{ color: '#0f0', fontFamily: 'monospace' }}>
+            INITIALIZING SYSTEM...
+        </div>
       </div>
     );
   }
@@ -123,19 +150,16 @@ function App() {
 
       {/* ARCADE MAKİNESİ ALANI */}
       <div className="arcade-wrapper">
-        {/* 1. Makine Görseli */}
         <img 
           src="/retro_arcade_image.png" 
           alt="Arcade Machine" 
           className="arcade-bg-img" 
         />
 
-        {/* 2. Oyun Ekranı (Görselin içine oturacak) */}
         <div className="game-screen" id="arcade-screen-container">
-          {/* Game bileşeni artık buraya render olacak */}
           <Game />
 
-          {/* Modallar ve Diyaloglar da oyun ekranının içinde çıksın */}
+          {/* MODAL YÖNETİMİ */}
           {activeContent?.type === 'modal' && (
             <PixelModal 
               contentKey={activeContent.key} 
@@ -155,6 +179,12 @@ function App() {
           {activeContent?.type === 'guestbook' && (
              <GuestBook onClose={() => setActiveContent(null)} />
           )}
+          
+          {/* Social Portal Modalı */}
+          {activeContent?.type === 'social_portal' && (
+              <SocialPanel onClose={() => setActiveContent(null)} />
+          )}
+          
         </div>
       </div>
 

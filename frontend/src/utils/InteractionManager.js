@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+
 export default class InteractionManager {
     constructor(scene) {
         this.scene = scene;
@@ -31,14 +32,14 @@ export default class InteractionManager {
 
                 // 2. Kalıcı Etiket (Label) Oluşturma
                 const label = this.scene.add.text(centerX, centerY - 35, labelText, {
-                fontFamily: '"Press Start 2P", cursive',
-                fontSize: '7px', // Daha büyük
-                fill: '#ffffff',
-                stroke: '#000000', // Simsiyah kalın çerçeve
-                strokeThickness: 4
-            });
-            label.setOrigin(0.5);
-            label.setDepth(2000);
+                    fontFamily: '"Press Start 2P", cursive',
+                    fontSize: '7px', // Daha büyük
+                    fill: '#ffffff',
+                    stroke: '#000000', // Simsiyah kalın çerçeve
+                    strokeThickness: 4
+                });
+                label.setOrigin(0.5);
+                label.setDepth(2000);
                 
                 // Etiketi ve ilgili sensörü eşleştirerek sakla
                 this.labels.push({
@@ -56,38 +57,55 @@ export default class InteractionManager {
     }
 
     update() {
-    // 1. ANIMASYONLAR: UI açık olsa da çalışır
-    const time = this.scene.time.now;
-    this.labels.forEach(labelItem => {
-        const floatingY = Math.sin(time / 200) * 4;
-        labelItem.textObj.y = labelItem.baseY + floatingY;
+        // 1. ANIMASYONLAR: UI açık olsa da çalışır
+        const time = this.scene.time.now;
+        this.labels.forEach(labelItem => {
+            const floatingY = Math.sin(time / 200) * 4;
+            labelItem.textObj.y = labelItem.baseY + floatingY;
 
-        // UI açıkken parlamayı durdur ki kafa karışmasın
-        if (!window.isUIOpen && this.activeObject === labelItem.sensorObj && this.scene.physics.overlap(this.scene.player, labelItem.sensorObj)) {
-            labelItem.textObj.setFill('#ffffff');
-            labelItem.textObj.setScale(1.1);
-        } else {
-            labelItem.textObj.setFill('#f1c40f');
-            labelItem.textObj.setScale(1.0);
-        }
-    });
+            // UI açıkken parlamayı durdur ki kafa karışmasın
+            if (!window.isUIOpen && this.activeObject === labelItem.sensorObj && this.scene.physics.overlap(this.scene.player, labelItem.sensorObj)) {
+                labelItem.textObj.setFill('#ffffff');
+                labelItem.textObj.setScale(1.1);
+            } else {
+                labelItem.textObj.setFill('#f1c40f');
+                labelItem.textObj.setScale(1.0);
+            }
+        });
 
-    // 2. ETKİLEŞİM TETİKLEME: UI açıkken buradan sonrasını çalıştırma
-    if (window.isUIOpen) return;
+        // 2. ETKİLEŞİM TETİKLEME: UI açıkken buradan sonrasını çalıştırma
+        if (window.isUIOpen) return;
 
-   if (this.activeObject) {
+        if (this.activeObject) {
             const isOverlapping = this.scene.physics.overlap(this.scene.player, this.activeObject);
             
             if (isOverlapping) {
                 // Sadece tanımladığımız tuşu kontrol ediyoruz
                 if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
-                    window.dispatchEvent(new CustomEvent('openModal', { 
-                        detail: { contentKey: this.activeObject.getData('contentKey') } 
-                    }));
+                    
+                    // contentKey'i al
+                    const contentKey = this.activeObject.getData('contentKey');
+
+                    // --- DEĞİŞİKLİK BURADA: Portal Kontrolü ---
+                    // Eğer 'social_portal' ise özel bir type ile gönderiyoruz ki App.jsx sunucuya sormasın
+                    if (contentKey === 'social_portal') {
+                        window.dispatchEvent(new CustomEvent('openModal', { 
+                            detail: { 
+                                contentKey: 'social_portal',
+                                type: 'social_portal', // Frontend'in tanıması için tip
+                                isStatic: true         // API çağrısı yapılmayacak
+                            } 
+                        }));
+                    } else {
+                        // Standart Davranış (Database'den çekilecekler)
+                        window.dispatchEvent(new CustomEvent('openModal', { 
+                            detail: { contentKey: contentKey } 
+                        }));
+                    }
                 }
             } else {
                 this.activeObject = null;
             }
         }
-}
+    }
 }

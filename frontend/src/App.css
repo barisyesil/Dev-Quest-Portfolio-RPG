@@ -96,3 +96,9 @@ body, html {
     z-index: 20;
     white-space: nowrap;
 }
+/* Social Panel Hover Efekti */
+.social-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  background-color: #252540 !important;
+}

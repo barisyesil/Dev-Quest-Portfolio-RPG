@@ -37,7 +37,7 @@ const DialogueBox = ({ contentKey, onClose, dataOverride }) => {
         
         {isFinished && (
           <div style={styles.arrowContainer}>
-            <span style={styles.arrowAnim}>▼</span> [SPACE]
+            <span style={styles.arrowAnim}>▼</span> [ ESC ]
           </div>
         )}
       </div>
