@@ -38,7 +38,7 @@ export default class InteractionManager {
                     stroke: '#000000', // Simsiyah kalın çerçeve
                     strokeThickness: 4
                 });
-                label.setOrigin(0.5);
+                label.setOrigin(0.5); 
                 label.setDepth(2000);
                 
                 // Etiketi ve ilgili sensörü eşleştirerek sakla
@@ -57,14 +57,20 @@ export default class InteractionManager {
     }
 
     update() {
-        // 1. ANIMASYONLAR: UI açık olsa da çalışır
         const time = this.scene.time.now;
+
+        // 1. ANIMASYONLAR (UI Açık olsa bile çalışır)
         this.labels.forEach(labelItem => {
-            const floatingY = Math.sin(time / 200) * 4;
+            // Yüzme efekti
+            const floatingY = Math.sin(time / 400) * 3; 
             labelItem.textObj.y = labelItem.baseY + floatingY;
 
-            // UI açıkken parlamayı durdur ki kafa karışmasın
-            if (!window.isUIOpen && this.activeObject === labelItem.sensorObj && this.scene.physics.overlap(this.scene.player, labelItem.sensorObj)) {
+            // Parlama Efekti (Burada isUIOpen kontrolü OLMAMALI)
+            // Karakter nesnenin içindeyse her zaman parlasın
+            const isHovering = this.activeObject === labelItem.sensorObj && 
+                               this.scene.physics.overlap(this.scene.player, labelItem.sensorObj);
+
+            if (isHovering) {
                 labelItem.textObj.setFill('#ffffff');
                 labelItem.textObj.setScale(1.1);
             } else {
@@ -73,31 +79,27 @@ export default class InteractionManager {
             }
         });
 
-        // 2. ETKİLEŞİM TETİKLEME: UI açıkken buradan sonrasını çalıştırma
+        // 2. INPUT ENGELLEME (UI Açıksa buradan aşağısı çalışmaz)
         if (window.isUIOpen) return;
 
+        // 3. TUŞ DİNLEME VE ETKİLEŞİM
         if (this.activeObject) {
             const isOverlapping = this.scene.physics.overlap(this.scene.player, this.activeObject);
             
             if (isOverlapping) {
-                // Sadece tanımladığımız tuşu kontrol ediyoruz
                 if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
                     
-                    // contentKey'i al
                     const contentKey = this.activeObject.getData('contentKey');
 
-                    // --- DEĞİŞİKLİK BURADA: Portal Kontrolü ---
-                    // Eğer 'social_portal' ise özel bir type ile gönderiyoruz ki App.jsx sunucuya sormasın
                     if (contentKey === 'social_portal') {
-                        window.dispatchEvent(new CustomEvent('openModal', { 
+                         window.dispatchEvent(new CustomEvent('openModal', { 
                             detail: { 
                                 contentKey: 'social_portal',
-                                type: 'social_portal', // Frontend'in tanıması için tip
-                                isStatic: true         // API çağrısı yapılmayacak
+                                type: 'social_portal',
+                                isStatic: true
                             } 
                         }));
                     } else {
-                        // Standart Davranış (Database'den çekilecekler)
                         window.dispatchEvent(new CustomEvent('openModal', { 
                             detail: { contentKey: contentKey } 
                         }));

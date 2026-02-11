@@ -3,28 +3,23 @@ import Phaser from 'phaser';
 import InteractionManager from './utils/InteractionManager';
 
 const Game = () => {
-  // Oyun instance'ını referans olarak tutalım
   const gameRef = useRef(null);
 
   useEffect(() => {
     
-    // Eğer önceki bir oyun instance'ı varsa temizle (Strict Mode için)
     if (gameRef.current) {
         gameRef.current.destroy(true);
         gameRef.current = null;
     }
 
-    // KRİTİK DEĞİŞİKLİK: Phaser'ı 100ms gecikmeli başlat
-    // Bu, CSS yüklendikten ve div boyutları oluştuktan sonra çalışmasını sağlar.
     const timer = setTimeout(() => {
         const config = {
             type: Phaser.AUTO,
-            // Arcade ekranının oranına göre bu çözünürlüğü artırıp azaltabilirsin.
             width: 800, 
             height: 600,
-            parent: 'game-container', // HTML'deki bu ID'ye canvas'ı inject edecek
+            parent: 'game-container',
             pixelArt: true,
-            transparent: true, // Arka plan şeffaf
+            transparent: true,
             physics: {
                 default: 'arcade',
                 arcade: { 
@@ -33,19 +28,16 @@ const Game = () => {
                 }
             },
             scale: {
-                // FIT modu, canvas'ı parent div'in boyutuna sığdırır.
                 mode: Phaser.Scale.FIT,
                 autoCenter: Phaser.Scale.CENTER_BOTH,
-                // Resize olaylarını daha sıkı takip et
                 resizeInterval: 200 
             },
             scene: { preload, create, update }
         };
 
-        // Oyunu başlat ve ref'e ata
         gameRef.current = new Phaser.Game(config);
 
-    }, 100); // 100ms gecikme
+    }, 100);
 
 
     function preload() {
@@ -69,11 +61,11 @@ const Game = () => {
 
         const allTilesets = [interiorsTileset, roomBuilderTileset, tileset3];
 
-        const groundLayer = map.createLayer('Ground', allTilesets, 0, 0);
-        const walls3dLayer = map.createLayer('walls 3d', allTilesets, 0, 0);
-        const rugLayer = map.createLayer('Rug etc', allTilesets, 0, 0);
+        map.createLayer('Ground', allTilesets, 0, 0);
+        map.createLayer('walls 3d', allTilesets, 0, 0);
+        map.createLayer('Rug etc', allTilesets, 0, 0);
         const interiorsLayer = map.createLayer('Interiors', allTilesets, 0, 0);
-        const suslemeLayer = map.createLayer('susleme', allTilesets, 0, 0);
+        map.createLayer('susleme', allTilesets, 0, 0);
         const wallsLayer = map.createLayer('Walls', allTilesets, 0, 0);
 
         wallsLayer.setCollisionByExclusion([-1]);
@@ -109,17 +101,34 @@ const Game = () => {
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setZoom(2.5); 
         
+        // --- KLAVYE TANIMLAMALARI ---
+        // Ok Tuşları
         this.cursors = this.input.keyboard.createCursorKeys();
+        
+        // WASD Tuşları (YENİ EKLENDİ)
+        this.wasd = this.input.keyboard.addKeys({
+            up: Phaser.Input.Keyboard.KeyCodes.W,
+            down: Phaser.Input.Keyboard.KeyCodes.S,
+            left: Phaser.Input.Keyboard.KeyCodes.A,
+            right: Phaser.Input.Keyboard.KeyCodes.D
+        });
 
         this.interactionManager = new InteractionManager(this);
         this.interactionManager.init(map);
     }
 
     function update() {
+        // 1. ÖNCE ETKİLEŞİM YÖNETİCİSİNİ ÇALIŞTIR
+        if (this.interactionManager) this.interactionManager.update();
+
+        // 2. UI KONTROLÜ
         if (window.isUIOpen) {
             this.player.setVelocity(0);
-            const currentAnim = this.player.anims.currentAnim?.key || 'idle-down';
-            this.player.anims.play(currentAnim, true);
+            
+            const currentAnim = this.player.anims.currentAnim?.key;
+            if (currentAnim && currentAnim.startsWith('walk-')) {
+                 this.player.anims.play(currentAnim.replace('walk-', 'idle-'), true);
+            }
 
             if (this.input.keyboard.enabled) {
                 this.input.keyboard.enabled = false;
@@ -128,55 +137,56 @@ const Game = () => {
             return; 
         }
 
+        // 3. UI KAPALIYSA KLAVYEYİ GERİ AÇ
         if (!this.input.keyboard.enabled) {
             this.input.keyboard.enabled = true;
         }
 
-        const speed = 80;
+        // 4. OYUNCU HAREKET MANTIĞI
+        const speed = 80; 
         this.player.setVelocity(0);
-        let moved = false;
+        
+        let velocityX = 0;
+        let velocityY = 0;
 
-        if (this.cursors.left.isDown) {
-            this.player.setVelocityX(-speed);
+        // --- YATAY HAREKET (Oklar VEYA 'A'/'D') ---
+        if (this.cursors.left.isDown || this.wasd.left.isDown) {
+            velocityX = -speed;
             this.player.anims.play('walk-right', true);
-            moved = true;
-        } else if (this.cursors.right.isDown) {
-            this.player.setVelocityX(speed);
+        } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
+            velocityX = speed;
             this.player.anims.play('walk-left', true);
-            moved = true;
         }
 
-        if (this.cursors.up.isDown) {
-            this.player.setVelocityY(-speed);
-            if (!moved) this.player.anims.play('walk-up', true);
-            moved = true;
-        } else if (this.cursors.down.isDown) {
-            this.player.setVelocityY(speed);
-            if (!moved) this.player.anims.play('walk-down', true);
-            moved = true;
+        // --- DİKEY HAREKET (Oklar VEYA 'W'/'S') ---
+        if (this.cursors.up.isDown || this.wasd.up.isDown) {
+            velocityY = -speed;
+            if (velocityX === 0) this.player.anims.play('walk-up', true);
+        } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
+            velocityY = speed;
+            if (velocityX === 0) this.player.anims.play('walk-down', true);
         }
 
-        if (!moved) {
-            const currentAnim = this.player.anims.currentAnim ? this.player.anims.currentAnim.key.split('-')[1] : 'down';
-            const safeAnim = currentAnim || 'down'; 
-            this.player.anims.play(`idle-${safeAnim}`, true);
-        }
+        this.player.setVelocity(velocityX, velocityY);
 
-        if (this.interactionManager) this.interactionManager.update();
+        // HAREKET DURDUYSA IDLE ANİMASYONU
+        if (velocityX === 0 && velocityY === 0) {
+            const currentAnim = this.player.anims.currentAnim ? this.player.anims.currentAnim.key : 'idle-down';
+            if (currentAnim.startsWith('walk-')) {
+                 const idleKey = currentAnim.replace('walk-', 'idle-');
+                 this.player.anims.play(idleKey, true);
+            }
+        }
     }
 
-    // CLEANUP FONKSİYONU
     return () => {
-        // Timer'ı temizle (Hafıza sızıntısı olmasın)
         clearTimeout(timer);
-        
-        // Oyunu yok et
         if (gameRef.current) {
             gameRef.current.destroy(true);
             gameRef.current = null;
         }
     };
-  }, []); // Boş dependency array
+  }, []); 
 
   return <div id="game-container" style={{ width: '100%', height: '105%' }} />;
 };

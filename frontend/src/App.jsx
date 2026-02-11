@@ -6,18 +6,40 @@ import DialogueBox from './components/DialogueBox';
 import GuestBook from './components/GuestBook';
 import { api } from './services/api';
 import SocialPanel from './components/SocialPanel';
+import { audioManager } from './utils/AudioManager'; // Ses Yöneticisi eklendi
 
 function App() {
   const [activeContent, setActiveContent] = useState(null);
   const [dynamicRegistry, setDynamicRegistry] = useState({});
   const [loading, setLoading] = useState(true);
+  const [isMuted, setIsMuted] = useState(false); // Mute durumu
 
-  // 1. Veri Yükleme: Backend'den tüm portfolyo içeriğini çekiyoruz
+  // 1. Müzik Başlatma (Kullanıcı etkileşimi bekler)
+  useEffect(() => {
+    const startAudio = () => {
+        // Audio Manager'ı başlat ve müziği çal
+        audioManager.init();
+        audioManager.playBGM();
+
+        // Dinleyicileri temizle (Sadece bir kez çalışmalı)
+        window.removeEventListener('keydown', startAudio);
+        window.removeEventListener('click', startAudio);
+    };
+
+    window.addEventListener('keydown', startAudio);
+    window.addEventListener('click', startAudio);
+    
+    return () => {
+        window.removeEventListener('keydown', startAudio);
+        window.removeEventListener('click', startAudio);
+    };
+  }, []);
+
+  // 2. Veri Yükleme: Backend'den tüm portfolyo içeriğini çekiyoruz
   useEffect(() => {
     const fetchPortfolioData = async () => {
       try {
         setLoading(true);
-        // Hataları yakalamak için try-catch bloğu içinde kalmalı
         let projects = [], achievements = [], dialogues = [];
         
         try {
@@ -26,12 +48,9 @@ function App() {
             dialogues = await api.getDialogues();
         } catch (apiError) {
             console.error("API Verisi Çekilemedi (Offline Mod olabilir):", apiError);
-            // API hatası olsa bile oyunun açılması için boş array devam et
         }
 
-        // API'den gelen verileri bileşenlerin beklediği formata (Registry) dönüştür
         const registry = {
-          // Projeler Listesi
           project_desk_intro: { 
             type: 'modal', 
             data: { 
@@ -39,7 +58,6 @@ function App() {
               items: projects.map(p => ({ ...p, tags: p.tags ? p.tags.split(',') : [] })) 
             } 
           },
-          // Başarılar Listesi
           achievements_list: { 
             type: 'modal', 
             data: { 
@@ -47,14 +65,10 @@ function App() {
               items: achievements.map(a => ({ ...a, tags: a.tags ? a.tags.split(',') : [] })) 
             } 
           },
-          // Ziyaretçi Defteri (Statik tetikleyici)
           guest_book_interaction: { type: 'guestbook' },
-          
-          // --- EKLENEN KISIM: Social Portal Registry Kaydı ---
           social_portal: { type: 'social_portal' } 
         };
 
-        // Dinamik Diyalogları (Easter Eggler, NPC'ler) Registry'e ekle
         dialogues.forEach(d => { 
           registry[d.key] = {  
             type: 'dialogue', 
@@ -73,20 +87,27 @@ function App() {
     fetchPortfolioData();
   }, []);
 
-  // 2. Etkileşim ve Klavye Yönetimi
+  // 3. Etkileşim ve Klavye Yönetimi
   useEffect(() => {
-    // UI açık mı kontrolü (window objesine atıyoruz ki Phaser erişebilsin)
     window.isUIOpen = activeContent !== null;
 
     const handleOpenInteraction = (event) => {
       if (window.isUIOpen) return; 
 
       const { contentKey, type, isStatic } = event.detail;
+      console.log("Interaction Tetiklendi:", contentKey);
 
-      console.log("Interaction Tetiklendi:", contentKey); // Debug log
+      // --- SES EFEKTLERİ ---
+      // Genel etkileşim sesi
+      audioManager.playSFX('interact');
 
-      // Eğer InteractionManager'dan özel bir tip geldiyse (örn: social_portal)
+      // Eğer InteractionManager'dan özel bir tip geldiyse
       if (type && isStatic) {
+          // Portal ise özel portal sesi çal
+          if (type === 'social_portal') {
+              audioManager.playSFX('portal');
+          }
+
           setActiveContent({ type, key: contentKey });
           return;
       }
@@ -104,7 +125,6 @@ function App() {
     const handleKeyDown = (e) => {
       if (!activeContent) return;
 
-      // Input alanlarına yazı yazarken modal kapanmasın
       const isTyping = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
       
       if (e.key === 'Escape') {
@@ -113,15 +133,9 @@ function App() {
       }
 
       if (isTyping) {
-        // Space tuşu formlarda boşluk bırakmalı, modalı kapatmamalı
         e.stopPropagation(); 
         return;
       }
-
-      // Sadece 'Escape' veya etkileşim tuşu dışında bir tuşla kapatmak istersen burayı düzenle
-      // Şimdilik 'E' veya 'Space' ile de kapatma özelliği açık kalsın mı?
-      // Kullanıcı deneyimi için genelde 'Escape' veya 'X' butonu yeterlidir.
-      // E tuşuna basınca kapanması bazen input yazarken karışıklık yaratabilir (yukarıda engelledik gerçi).
     };
 
     window.addEventListener('openModal', handleOpenInteraction);
@@ -132,6 +146,12 @@ function App() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [activeContent, dynamicRegistry]); 
+
+  // Ses Aç/Kapa Fonksiyonu
+  const toggleAudio = () => {
+      const mutedState = audioManager.toggleMute();
+      setIsMuted(mutedState);
+  };
 
   // Yükleme Ekranı
   if (loading) {
@@ -147,6 +167,19 @@ function App() {
   return (
     <div className="app-main-container">
       <h1 className="game-title">DEVQUEST: PORTFOLIO RPG</h1>
+
+      {/* SES KONTROL BUTONU (Sağ Üst) */}
+      <button 
+        onClick={toggleAudio}
+        style={{
+            position: 'fixed', top: '20px', right: '20px', zIndex: 9999,
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: '24px', filter: 'drop-shadow(2px 2px 0 #000)'
+        }}
+        title={isMuted ? "Unmute" : "Mute"}
+      >
+        {isMuted ? '🔇' : '🔊'}
+      </button>
 
       {/* ARCADE MAKİNESİ ALANI */}
       <div className="arcade-wrapper">

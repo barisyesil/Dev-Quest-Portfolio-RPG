@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { dataMap } from '../data/dataRegistry';
+import { audioManager } from '../utils/AudioManager';
 
-const DialogueBox = ({ contentKey, onClose, dataOverride }) => {
+const DialogueBox = ({ contentKey, dataOverride }) => {
   const [displayText, setDisplayText] = useState('');
   const [isFinished, setIsFinished] = useState(false);
   
@@ -20,6 +21,10 @@ const DialogueBox = ({ contentKey, onClose, dataOverride }) => {
       indexRef.current += 1;
       const currentSlice = fullText.slice(0, indexRef.current);
       setDisplayText(currentSlice);
+      if (indexRef.current % 2 === 0) { // Her 2 harfte bir ses efekti
+        audioManager.playSFX('type');
+      }
+       // Her harf için daktilo sesi
 
       if (indexRef.current >= fullText.length) {
         clearInterval(timer);

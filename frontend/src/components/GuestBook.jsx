@@ -8,11 +8,7 @@ const GuestBook = ({ onClose }) => {
   const [formData, setFormData] = useState({ author: '', message: '' });
 
   // Açılış animasyonu ve VERİ ÇEKME
-  useEffect(() => {
-    const timer = setTimeout(() => setIsOpen(true), 10);
-    loadEntries(); // Bileşen açıldığında verileri yükle
-    return () => clearTimeout(timer);
-  }, []);
+
 
   const loadEntries = async () => {
     try {
@@ -22,7 +18,11 @@ const GuestBook = ({ onClose }) => {
       console.error("Entries yüklenemedi:", err);
     }
   };
-
+  useEffect(() => {
+    const timer = setTimeout(() => setIsOpen(true), 10);
+    loadEntries();           // Bileşen açıldığında verileri yükle
+    return () => clearTimeout(timer);
+  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.author || !formData.message) return;
