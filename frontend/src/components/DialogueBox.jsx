@@ -39,7 +39,7 @@ const DialogueBox = ({ dataOverride }) => {
                 clearInterval(typeInterval);
                 setIsFinished(true);
             }
-        }, 30); // Yazı hızı (30ms idealdir)
+        }, 30); // Yazı hızı (30ms)
     }, 0);
 
     // Cleanup: Bileşen kapanırsa timer'ları temizle

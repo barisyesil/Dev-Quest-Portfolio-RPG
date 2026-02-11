@@ -55,7 +55,7 @@ const Login = () => {
   );
 };
 
-// AdminPanel.css'i kullanabilirsin ama buraya hızlıca inline style yazıyorum
+
 const styles = {
   container: {
     display: 'flex', justifyContent: 'center', alignItems: 'center',

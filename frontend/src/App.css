@@ -29,7 +29,7 @@ body, html {
 
 /* --- ARCADE MAKİNESİ KAPLAYICISI --- */
 .arcade-wrapper {
-  position: relative; /* İçindeki oyunu buna göre konumlandıracağız */
+  position: relative; 
   height: 90vh; /* Ekranın %90'ı kadar yer kaplasın */
   display: flex;
   justify-content: center; 
@@ -40,8 +40,8 @@ body, html {
 .arcade-bg-img {
   height: 120%; /* Parent yüksekliğine uy */
   width: auto;  /* Oranını koru */
-  z-index: 10;  /* Oyunun önünde çerçeve gibi durabilir (eğer ekran kısmı şeffafsa) */
-  /* NOT: Eğer görselin ekran kısmı boş/şeffaf değilse z-index'i düşürüp oyunu üste almalıyız */
+  z-index: 10;  /* Oyunun önünde çerçeve gibi durabilir */
+ 
   pointer-events: none; /* Tıklamaları engellemesin */
 }
 
@@ -52,13 +52,13 @@ body, html {
     background-color: #000;
     overflow: hidden;
     top: 10%;
-    /* left: 14.5%; */
+    /* left: 14.5%; */ /* Şimdilik buna gerek yok ilerde değişebilir. */
     width: 50%;
     height: 81%;
     box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
 }
 
-/* CRT / Eski Ekran Efekti (Opsiyonel: Oyuna çizgili görünüm verir) */
+
 .game-screen::after {
   content: " ";
  

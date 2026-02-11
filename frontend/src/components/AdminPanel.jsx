@@ -11,8 +11,7 @@ const AdminPanel = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({}); 
 
-  // FIX: fetchData'yı useEffect içine aldık veya useCallback ile sarmalayabiliriz.
-  // Burada useEffect içinde tanımlamak en kolayı.
+  
   useEffect(() => {
     const fetchData = async () => {
         setLoading(true);

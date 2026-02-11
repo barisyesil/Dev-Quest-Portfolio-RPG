@@ -189,7 +189,7 @@
                         {
                          "name":"label",
                          "type":"string",
-                         "value":"AI Help"
+                         "value":"    AI \n Secretary"
                         }],
                  "rotation":0,
                  "type":"",
@@ -365,10 +365,21 @@
                  "width":39.3333333333333,
                  "x":232,
                  "y":179.333333333333
+                }, 
+                {
+                 "height":2.02917,
+                 "id":29,
+                 "name":"spawn_point_ai",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":4.05834,
+                 "x":24.6374966666667,
+                 "y":73.6520816666666
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -398,7 +409,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":29,
+ "nextobjectid":30,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

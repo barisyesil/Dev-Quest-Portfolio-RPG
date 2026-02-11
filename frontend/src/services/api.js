@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5174/api'; // Backend portunu kontrol et (5000, 5123 vs olabilir)
+const API_BASE_URL = 'http://localhost:5174/api'; // Backend portu
 
 export const api = {
   login: async (username, password) => {
@@ -92,7 +92,7 @@ export const api = {
       body: JSON.stringify(item)
     });
 
-    // PUT istekleri genelde "204 No Content" döner, bu yüzden response.json() hata verebilir.
+    
     // Başarılıysa true dönelim.
     if (method === 'PUT') {
         if (!response.ok) throw new Error('Güncelleme başarısız');

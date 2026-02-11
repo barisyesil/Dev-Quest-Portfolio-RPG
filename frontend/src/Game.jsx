@@ -50,6 +50,10 @@ const Game = () => {
             frameWidth: 32,
             frameHeight: 32
         });
+        this.load.spritesheet('ai_secretary', '/assets/images/ai_npc_secretary.png', {
+            frameWidth: 32,
+            frameHeight: 32
+        });
     }
 
     function create() {
@@ -75,13 +79,21 @@ const Game = () => {
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
         const spawnPoint = map.findObject('Interactions', obj => obj.name === 'spawn_point');
+        const spawnPointAI = map.findObject('Interactions', obj => obj.name === 'spawn_point_ai');
         const spawnX = spawnPoint ? spawnPoint.x : 200;
         const spawnY = spawnPoint ? spawnPoint.y : 200;
+        const spawnXAI = spawnPointAI ? spawnPointAI.x : 250;
+        const spawnYAI = spawnPointAI ? spawnPointAI.y : 250;
 
         this.player = this.physics.add.sprite(spawnX, spawnY, 'player', 0);
         this.player.body.setSize(8, 8).setOffset(12, 24);
         this.player.setCollideWorldBounds(true); 
 
+        this.ai_secretary = this.physics.add.sprite(spawnXAI, spawnYAI, 'ai_secretary', 0);
+        this.ai_secretary.body.setSize(8, 8).setOffset(12, 24);
+        
+
+        
         this.physics.add.collider(this.player, wallsLayer);
         this.physics.add.collider(this.player, interiorsLayer);
 
@@ -96,7 +108,11 @@ const Game = () => {
             anims.create({ key: 'walk-right', frames: anims.generateFrameNumbers('player', { start: 20, end: 23 }), frameRate: 10, repeat: -1 });
             anims.create({ key: 'walk-left', frames: anims.generateFrameNumbers('player', { start: 24, end: 27 }), frameRate: 10, repeat: -1 });
             anims.create({ key: 'walk-up', frames: anims.generateFrameNumbers('player', { start: 28, end: 31 }), frameRate: 10, repeat: -1 });
+
+            anims.create({ key: 'idle-ai', frames: anims.generateFrameNumbers('ai_secretary', { start: 8, end: 11 }), frameRate: 6, repeat: -1 });
+
         }
+
 
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setZoom(2.5); 
@@ -121,6 +137,11 @@ const Game = () => {
         // 1. ÖNCE ETKİLEŞİM YÖNETİCİSİNİ ÇALIŞTIR
         if (this.interactionManager) this.interactionManager.update();
 
+        const currentAnim = this.ai_secretary.anims.currentAnim?.key; // Aı NPC Mevcut animasyonu kontrol et
+        if (!currentAnim || !currentAnim.startsWith('idle-ai')) {
+            this.ai_secretary.anims.play('idle-ai', true);
+        }
+        
         // 2. UI KONTROLÜ
         if (window.isUIOpen) {
             this.player.setVelocity(0);
@@ -143,7 +164,7 @@ const Game = () => {
         }
 
         // 4. OYUNCU HAREKET MANTIĞI
-        const speed = 80; 
+        const speed = 60; 
         this.player.setVelocity(0);
         
         let velocityX = 0;

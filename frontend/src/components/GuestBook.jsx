@@ -166,13 +166,13 @@ const styles = {
   },
   
   entryAuthor: { 
-    fontSize: '12px', color: '#8b0000', fontWeight: 'bold', marginBottom: '4px',
+    fontSize: '11px', color: '#8b0000', fontWeight: 'bold', marginBottom: '4px',
     wordBreak: 'break-all' /* Çok uzun isim girilirse satır atlat */
   },
   
   // --- METİN DÜZELTMESİ (TEXT WRAPPING) ---
   entryText: { 
-    fontSize: '14px', color: '#333', lineHeight: '1.4', fontFamily: 'monospace',
+    fontSize: '12px', color: '#333', lineHeight: '1.4', fontFamily: 'monospace',
     whiteSpace: 'pre-wrap',       /* Satır sonlarını koru ama uzun satırları kır */
     overflowWrap: 'break-word',   /* Kelime bütünlüğünü koruyarak kır */
     wordBreak: 'break-word',      /* Gerekirse kelimeyi böl */

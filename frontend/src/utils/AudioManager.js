@@ -12,7 +12,7 @@ class AudioManager {
         // --- MÜZİK (BGM) ---
         this.bgm = new Audio('/assets/audio/bg_music.mp3');
         this.bgm.loop = true; // Döngüye al
-        this.bgm.volume = 0.3; // %30 ses seviyesi (Rahatsız etmesin)
+        this.bgm.volume = 0.3; // %30 ses seviyesi 
 
         // --- EFEKTLER (SFX) ---
         this.sounds = {
@@ -34,7 +34,7 @@ class AudioManager {
         if (!this.initialized) this.init();
         if (this.isMuted) return;
         
-        // Tarayıcı hatasını önlemek için promise kullanıyoruz
+        // Tarayıcı hatasını önlemek için play()'ın döndürdüğü Promise'i yakalıyoruz
         this.bgm.play().catch(e => console.log("BGM Autoplay engellendi, etkileşim bekleniyor.", e));
     }
 
@@ -42,7 +42,7 @@ class AudioManager {
     playSFX(key) {
         if (!this.initialized || this.isMuted || !this.sounds[key]) return;
 
-        // Üst üste çalabilmesi için klonunu oluşturup çalıyoruz
+        // Üst üste çalabilmesi için klonunu oluşturup çalma
         // (Özellikle daktilo sesi için önemli)
         const soundClone = this.sounds[key].cloneNode();
         soundClone.volume = this.sounds[key].volume;
